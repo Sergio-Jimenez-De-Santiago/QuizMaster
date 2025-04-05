@@ -41,4 +41,8 @@ public void setSubmitted(){
 public void setStudentAnswers(Map<Integer, String> studentAnswers){
     this.studentAnswers = studentAnswers;
 }
+
+public Map<Integer,String> getStudentAnswers(){
+    return studentAnswers;
+}
 }
