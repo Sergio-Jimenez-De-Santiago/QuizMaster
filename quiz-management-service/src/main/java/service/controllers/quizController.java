@@ -12,14 +12,20 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Value;
 import java.net.UnknownHostException;
+import java.time.LocalDate;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import service.quiz.Quiz;
+import service.quiz.QuizSession;
 
 @RestController
-public class quizController {
+public class QuizController {
     private Map<Integer, Quiz> quizzes = new HashMap<>();
+    private Map<String, QuizSession> activeSessions = new HashMap<>();
+
     @Value("${server.port}")
     private int serverPort;
 
@@ -66,8 +72,9 @@ public class quizController {
 
     @PostMapping(value = "/quizzes", consumes = "application/json")
     public ResponseEntity<Quiz> createQuiz(
-            @RequestBody  String title, Map<Integer, String> questions,double timeLeft) {
-        Quiz quiz = new Quiz(title, questions, timeLeft);
+            @RequestBody String title, Map<Integer, String> questions, double timeLeft, Map<Integer, String> answers,
+            LocalDate dueDate) {
+        Quiz quiz = new Quiz(title, questions, timeLeft, answers, dueDate);
         quizzes.put(quiz.getId(), quiz);
         String url = "http://" + getHost() + "/quizzes/"
                 + quiz.getTitle();
@@ -77,4 +84,59 @@ public class quizController {
                 .header("Content-Location", url)
                 .body(quiz);
     }
+
+    @PostMapping("/quizzes/{quizId}/start")
+    public ResponseEntity<Object> startQuiz(
+            @PathVariable int quizId,
+            @RequestParam String studentId) {
+
+        Quiz quiz = quizzes.get(quizId);
+        if (quiz == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quiz not found.");
+        }
+
+        String sessionKey = studentId + ":" + quizId;
+
+        if (activeSessions.containsKey(sessionKey)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Quiz already started or attempted.");
+        }
+
+        QuizSession session = new QuizSession(studentId, quizId);
+        activeSessions.put(sessionKey, session);
+
+        Map<String, Object> quizStartPayload = new HashMap<>();
+        quizStartPayload.put("title", quiz.getTitle());
+        quizStartPayload.put("instructions", "Good luck! You have " + quiz.getTimeLeft() + " minutes.");
+        quizStartPayload.put("timeLeft", quiz.getTimeLeft());
+        quizStartPayload.put("questions", quiz.getQuestions()); 
+
+        return ResponseEntity.ok(quizStartPayload);
+    }
+    @PostMapping("/quizzes/{quizId}/attempt")
+    public ResponseEntity<Object> attemptQuiz(
+            @PathVariable int quizId,
+            @RequestParam String studentId,
+            @RequestParam Map<Integer, String> studentAnswers) {
+
+        String sessionKey = studentId + ":" + quizId;
+
+        QuizSession activeSession = activeSessions.get(sessionKey);
+
+        if (activeSession == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quiz session not found.");
+        }
+            
+        if (activeSession.isSubmitted()) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quiz already submitted.");
+        }
+            
+
+        
+        activeSession.setStudentAnswers(studentAnswers);
+        activeSession.setSubmitted();
+
+        return ResponseEntity.ok("Quiz attempt submitted successfully.");
+
+    }
+
 }
