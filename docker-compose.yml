@@ -1,0 +1,32 @@
+version: '3.1'
+
+services:
+
+    db:
+        image: postgres
+        restart: always
+        container_name: database
+        environment:
+            POSTGRES_DB: newdb
+            POSTGRES_PASSWORD: password
+        volumes:
+            - newdb:/var/lib/postgresql/data
+        ports:
+            - "5432:5432"
+        tty: true
+
+    user-service:
+        build:
+            context: ./user-service
+        depends_on:
+            - db
+        container_name: user-service
+        restart: always
+        environment:
+            POSTGRES_DB: newdb
+            POSTGRES_PASSWORD: password
+        ports:
+            - "8080:8080"
+
+volumes:
+    newdb:
