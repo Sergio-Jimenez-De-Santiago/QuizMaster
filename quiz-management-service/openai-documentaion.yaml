@@ -1,0 +1,236 @@
+openapi: 3.0.0
+info:
+  title: Grading Service API
+  version: "1.0.0"
+  description: API for creating, managing, and attempting quizzes. Uses HAL for hypermedia-driven navigation (HATEOAS).
+
+servers:
+  - url: http://localhost:8080
+
+paths:
+  /quizzes:
+    get:
+      summary: List all quizzes
+      responses:
+        '200':
+          description: List of quiz links
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _embedded:
+                    type: object
+                    properties:
+                      quizzes:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            title:
+                              type: string
+                            _links:
+                              type: object
+                              properties:
+                                self:
+                                  type: object
+                                  properties:
+                                    href:
+                                      type: string
+              example:
+                _embedded:
+                  quizzes:
+                    - title: "Math Quiz"
+                      _links:
+                        self:
+                          href: "http://localhost:8080/quizzes/1"
+    post:
+      summary: Create a new quiz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, questions, timeLeft, answers, dueDate]
+              properties:
+                title:
+                  type: string
+                questions:
+                  type: object
+                  additionalProperties:
+                    type: string
+                timeLeft:
+                  type: number
+                answers:
+                  type: object
+                  additionalProperties:
+                    type: string
+                dueDate:
+                  type: string
+                  format: date
+      responses:
+        '201':
+          description: Quiz created successfully
+          headers:
+            Location:
+              description: URL of the created quiz
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  title:
+                    type: string
+                  _links:
+                    type: object
+                    properties:
+                      self:
+                        type: object
+                        properties:
+                          href:
+                            type: string
+
+  /quizzes/{id}:
+    get:
+      summary: Get a specific quiz by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The quiz details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  title:
+                    type: string
+                  questions:
+                    type: object
+                    additionalProperties:
+                      type: string
+                  _links:
+                    type: object
+                    properties:
+                      self:
+                        type: object
+                        properties:
+                          href:
+                            type: string
+                      start:
+                        type: object
+                        properties:
+                          href:
+                            type: string
+                      delete:
+                        type: object
+                        properties:
+                          href:
+                            type: string
+    delete:
+      summary: Delete a quiz
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Quiz deleted successfully
+        '404':
+          description: Quiz not found
+
+  /quizzes/{quizId}/start:
+    post:
+      summary: Start a quiz session
+      parameters:
+        - in: path
+          name: quizId
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: studentId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Quiz session started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  instructions:
+                    type: string
+                  timeLeft:
+                    type: number
+                  questions:
+                    type: object
+                    additionalProperties:
+                      type: string
+                  _links:
+                    type: object
+                    properties:
+                      attempt:
+                        type: object
+                        properties:
+                          href:
+                            type: string
+        '403':
+          description: Quiz already started
+        '404':
+          description: Quiz not found
+
+  /quizzes/{quizId}/attempt:
+    post:
+      summary: Attempt a quiz
+      parameters:
+        - in: path
+          name: quizId
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: studentId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Answers submitted by student
+              additionalProperties:
+                type: string
+      responses:
+        '200':
+          description: Quiz submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Quiz already submitted
+        '404':
+          description: Quiz session not found

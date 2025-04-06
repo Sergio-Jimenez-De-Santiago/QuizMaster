@@ -4,7 +4,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -130,8 +129,6 @@ public class QuizController {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quiz already submitted.");
         }
             
-
-        
         activeSession.setStudentAnswers(studentAnswers);
         activeSession.setSubmitted();
 
