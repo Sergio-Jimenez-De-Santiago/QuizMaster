@@ -66,7 +66,7 @@ public class QuizController {
         if (quiz == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.noContent().build(); // 204 No Content
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping(value = "/quizzes", consumes = "application/json")

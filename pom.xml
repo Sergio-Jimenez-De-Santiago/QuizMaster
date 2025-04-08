@@ -13,8 +13,9 @@
     </parent>
 
     <modules>
+        <module>frontend</module>
         <module>user-service</module>
-        <module>quiz-management-service</module>
+        <module>quiz-management-service</module> 
         <module>grading-service</module>
     </modules>
 
