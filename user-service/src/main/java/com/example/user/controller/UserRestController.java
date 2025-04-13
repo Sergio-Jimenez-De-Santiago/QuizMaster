@@ -1,14 +1,17 @@
 package com.example.user.controller;
 
+import com.example.user.assembler.UserDTOModelAssembler;
 import com.example.user.model.User;
+import com.example.user.dto.UserProfileDTO;
 import com.example.user.service.UserService;
 
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
-import java.util.Optional;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +20,9 @@ public class UserRestController {
 
     @Autowired
     private final UserService userService;
+
+    @Autowired
+    private UserDTOModelAssembler assembler;
 
     @Autowired
     public UserRestController(UserService userService) {
@@ -32,7 +38,10 @@ public class UserRestController {
         System.out.println("===========================================================");
         try {
             User created = userService.createUser(user);
-            return ResponseEntity.ok(created);
+            EntityModel<UserProfileDTO> resource = assembler.toModel(new UserProfileDTO(created));
+            return ResponseEntity
+                    .created(linkTo(methodOn(UserRestController.class).getUserProfile(created.getId())).toUri())
+                    .body(resource);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("Email already exists 2");
         }
@@ -41,19 +50,32 @@ public class UserRestController {
     @PostMapping("/api/users/login")
     public ResponseEntity<?> login(@RequestBody User user) {
         User existing = userService.findByEmail(user.getEmail());
+
         if (existing == null ||
                 !existing.getPassword().equals(user.getPassword()) ||
                 !existing.getName().equals(user.getName())) {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
-        return ResponseEntity.ok(existing);
+
+        EntityModel<UserProfileDTO> resource = assembler.toModel(new UserProfileDTO(existing));
+        return ResponseEntity.ok(resource);
     }
 
     @GetMapping("/api/users/{id}")
-    public ResponseEntity<User> getUser(@PathVariable Long id) {
+    public ResponseEntity<EntityModel<UserProfileDTO>> getUser(@PathVariable Long id) {
         try {
             User user = userService.findById(id);
-            return ResponseEntity.ok(user);
+            return ResponseEntity.ok(assembler.toModel(new UserProfileDTO(user)));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/api/users/{id}/profile")
+    public ResponseEntity<EntityModel<UserProfileDTO>> getUserProfile(@PathVariable Long id) {
+        try {
+            User user = userService.findById(id);
+            return ResponseEntity.ok(assembler.toModel(new UserProfileDTO(user)));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
