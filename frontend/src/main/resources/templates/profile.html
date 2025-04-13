@@ -3,15 +3,17 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>QuizMaster - Login</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>QuizMaster</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
     <link th:href="@{styles/header.css}" rel="stylesheet" />
 </head>
+
 <body>
 <header>
-    <a href="/index" class="headerBrand">QuizMaster</a>
+    <a href="/index" class="headerBrand" >QuizMaster</a>
     <nav>
         <div class="headerDiv">
             <ul>
@@ -29,28 +31,24 @@
         </div>
     </nav>
 </header>
-
 <main>
-    <div class="container my-5">
-        <h2>Login</h2>
-        <div th:if="${error}" class="alert alert-danger">
-            <p class="error-message">Invalid name, email or password. Please try again.</p>
-        </div>
-        <form action="/login" method="post">
-            <div class="form-group">
-                <label for="name">Name:</label>
-                <input type="text" class="form-control" id="name" name="name" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" class="form-control" id="email" name="email" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" class="form-control" id="password" name="password" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Login</button>
-        </form>
+    <div class="container mt-5">
+        <h2>User Profile</h2>
+        <table class="table">
+            <tr>
+                <th>Name:</th>
+                <td th:text="${user.name}"></td>
+            </tr>
+            <tr>
+                <th>Email:</th>
+                <td th:text="${user.email}"></td>
+            </tr>
+            <tr>
+                <th>Role:</th>
+                <td th:text="${user.role}"></td>
+            </tr>
+        </table>
+        <a href="/index" class="btn btn-primary">Back to Home</a>
     </div>
 </main>
 </body>

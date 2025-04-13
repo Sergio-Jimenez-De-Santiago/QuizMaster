@@ -81,4 +81,15 @@ public class FrontendUserController {
         // Load quizzes from quiz-service here
         return "index";
     }
+
+    @GetMapping("/profile")
+    public String profile(Model model, HttpSession session) {
+        User user = (User) session.getAttribute("loggedInUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("user", user);
+        return "profile";
+    }
+
 }
