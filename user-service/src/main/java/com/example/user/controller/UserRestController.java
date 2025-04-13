@@ -2,7 +2,12 @@ package com.example.user.controller;
 
 import com.example.user.model.User;
 import com.example.user.service.UserService;
+
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class UserRestController {
 
+    @Autowired
     private final UserService userService;
 
     @Autowired
@@ -36,16 +42,21 @@ public class UserRestController {
     public ResponseEntity<?> login(@RequestBody User user) {
         User existing = userService.findByEmail(user.getEmail());
         if (existing == null ||
-            !existing.getPassword().equals(user.getPassword()) ||
-            !existing.getName().equals(user.getName())) {
+                !existing.getPassword().equals(user.getPassword()) ||
+                !existing.getName().equals(user.getName())) {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
         return ResponseEntity.ok(existing);
     }
 
-    @GetMapping("/api/users")
-    public ResponseEntity<?> listUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    @GetMapping("/api/users/{id}")
+    public ResponseEntity<User> getUser(@PathVariable Long id) {
+        try {
+            User user = userService.findById(id);
+            return ResponseEntity.ok(user);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping("/api/health")

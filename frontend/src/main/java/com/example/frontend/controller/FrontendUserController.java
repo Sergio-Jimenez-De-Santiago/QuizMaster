@@ -31,7 +31,7 @@ public class FrontendUserController {
         System.out.println("FrontendUserController adduser");
         try {
             ResponseEntity<User> response = restTemplate.postForEntity(
-                userServiceUrl + "/api/users/register", user, User.class);
+                    userServiceUrl + "/api/users/register", user, User.class);
             session.setAttribute("loggedInUser", response.getBody());
             return "redirect:/index";
         } catch (HttpClientErrorException e) {
@@ -55,7 +55,7 @@ public class FrontendUserController {
     public String login(@ModelAttribute User user, Model model, HttpSession session) {
         try {
             ResponseEntity<User> response = restTemplate.postForEntity(
-                userServiceUrl + "/api/users/login", user, User.class);
+                    userServiceUrl + "/api/users/login", user, User.class);
             session.setAttribute("loggedInUser", response.getBody());
             return "redirect:/index";
         } catch (HttpClientErrorException.Unauthorized e) {
@@ -73,7 +73,7 @@ public class FrontendUserController {
         return "redirect:/index";
     }
 
-    @GetMapping({"/", "/index"})
+    @GetMapping({ "/", "/index" })
     public String showIndex(Model model, HttpSession session) {
         User user = (User) session.getAttribute("loggedInUser");
         model.addAttribute("loggedInUser", user);
@@ -84,6 +84,24 @@ public class FrontendUserController {
 
     @GetMapping("/profile")
     public String profile(Model model, HttpSession session) {
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        if (loggedInUser == null) {
+            return "redirect:/login";
+        }
+        try {
+            ResponseEntity<User> response = restTemplate.getForEntity(
+                    userServiceUrl + "/api/users/" + loggedInUser.getId(), User.class);
+            model.addAttribute("user", response.getBody());
+        } catch (Exception e) {
+            model.addAttribute("error", "Could not load profile");
+            return "redirect:/login";
+        }
+
+        return "profile";
+    }
+
+    @GetMapping("/profile2")
+    public String profile2(Model model, HttpSession session) {
         User user = (User) session.getAttribute("loggedInUser");
         if (user == null) {
             return "redirect:/login";
