@@ -1,7 +1,7 @@
 <project>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.example</groupId>
-    <artifactId>quiz-management-service</artifactId>
+    <artifactId>quiz-service</artifactId>
     <version>0.0.1</version>
     <packaging>jar</packaging>
 

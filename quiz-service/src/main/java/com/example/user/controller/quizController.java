@@ -1,4 +1,4 @@
-package service.controllers;
+package com.example.user.controller;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -17,11 +17,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
-import service.quiz.Quiz;
-import service.quiz.QuizSession;
+import com.example.user.service.Quiz;
+import com.example.user.service.QuizSession;
 
 @RestController
-public class QuizController {
+public class quizController {
     private Map<Integer, Quiz> quizzes = new HashMap<>();
     private Map<String, QuizSession> activeSessions = new HashMap<>();
 
@@ -66,9 +66,8 @@ public class QuizController {
         if (quiz == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent().build(); // 204 No Content
     }
-
     @PostMapping(value = "/quizzes", consumes = "application/json")
     public ResponseEntity<Quiz> createQuiz(
             @RequestBody String title, Map<Integer, String> questions, double timeLeft, Map<Integer, String> answers,

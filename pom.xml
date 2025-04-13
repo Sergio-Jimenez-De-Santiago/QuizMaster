@@ -15,8 +15,8 @@
     <modules>
         <module>frontend</module>
         <module>user-service</module>
-        <module>quiz-management-service</module> 
-        <module>grading-service</module>
+        <module>quiz-service</module> 
+        <!--<module>grading-service</module> -->
     </modules>
 
     <dependencies>

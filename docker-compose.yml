@@ -12,7 +12,7 @@ services:
         volumes:
             - newdb:/var/lib/postgresql/data
         ports:
-            - "5432:5432"
+            - "5433:5432"
         tty: true
 
     user-service:
@@ -26,6 +26,18 @@ services:
             POSTGRES_PASSWORD: password
         ports:
             - "8081:8081"
+
+    quiz-service:
+        build:
+            context: ./quiz-service
+        depends_on:
+            - db
+        restart: always
+        environment:
+            POSTGRES_DB: newdb
+            POSTGRES_PASSWORD: password
+        ports:
+            - "8082:8082"    
 
 
     frontend:
