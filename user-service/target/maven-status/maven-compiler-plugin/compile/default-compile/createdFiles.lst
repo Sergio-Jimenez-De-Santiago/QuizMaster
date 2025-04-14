@@ -1,0 +1,8 @@
+com/example/user/assembler/UserDTOModelAssembler.class
+com/example/user/dto/UserProfileDTO.class
+com/example/user/service/UserService.class
+com/example/user/security/UserRole.class
+com/example/user/controller/UserRestController.class
+com/example/user/repository/UserRepository.class
+com/example/user/model/User.class
+com/example/user/UserServiceApplication.class

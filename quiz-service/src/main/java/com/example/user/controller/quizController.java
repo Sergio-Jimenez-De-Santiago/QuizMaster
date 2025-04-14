@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import com.example.user.service.Quiz;
 import com.example.user.service.QuizSession;
+import com.example.user.dto.QuizDTO;
 
 @RestController
 public class quizController {
@@ -68,11 +69,11 @@ public class quizController {
         }
         return ResponseEntity.noContent().build(); // 204 No Content
     }
+    
     @PostMapping(value = "/quizzes", consumes = "application/json")
     public ResponseEntity<Quiz> createQuiz(
-            @RequestBody String title, Map<Integer, String> questions, double timeLeft, Map<Integer, String> answers,
-            LocalDate dueDate) {
-        Quiz quiz = new Quiz(title, questions, timeLeft, answers, dueDate);
+            @RequestBody QuizDTO quizDTO) {
+        Quiz quiz = new Quiz(quizDTO.getTitle(), quizDTO.getQuestions(), quizDTO.getTimeLeft(), quizDTO.getTeacherAnswers(), quizDTO.getDueDate());
         quizzes.put(quiz.getId(), quiz);
         String url = "http://" + getHost() + "/quizzes/"
                 + quiz.getTitle();

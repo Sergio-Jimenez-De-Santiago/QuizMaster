@@ -19,7 +19,7 @@ public class Quiz {
     private String title;
 
     @NotNull(message = "Time allowed is required")
-    private double timeLeft;
+    private String timeLeft;
 
     @NotNull(message = "Due date is required")
     private LocalDate dueDate;
@@ -52,10 +52,10 @@ public class Quiz {
         this.title = title;
     }
 
-    public double getTimeLeft() {
+    public String getTimeLeft() {
         return timeLeft;
     }
-    public void setTimeLeft(double timeLeft) {
+    public void setTimeLeft(String timeLeft) {
         this.timeLeft = timeLeft;
     }
 

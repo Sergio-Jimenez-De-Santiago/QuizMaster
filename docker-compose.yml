@@ -32,6 +32,7 @@ services:
             context: ./quiz-service
         depends_on:
             - db
+            - user-service
         restart: always
         environment:
             POSTGRES_DB: newdb

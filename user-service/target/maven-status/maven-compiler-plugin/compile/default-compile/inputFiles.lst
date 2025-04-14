@@ -1,0 +1,8 @@
+/Users/Timis/Documents/College/distributed/group-project/QuizMaster/user-service/src/main/java/com/example/user/UserServiceApplication.java
+/Users/Timis/Documents/College/distributed/group-project/QuizMaster/user-service/src/main/java/com/example/user/assembler/UserDTOModelAssembler.java
+/Users/Timis/Documents/College/distributed/group-project/QuizMaster/user-service/src/main/java/com/example/user/controller/UserRestController.java
+/Users/Timis/Documents/College/distributed/group-project/QuizMaster/user-service/src/main/java/com/example/user/dto/UserProfileDTO.java
+/Users/Timis/Documents/College/distributed/group-project/QuizMaster/user-service/src/main/java/com/example/user/model/User.java
+/Users/Timis/Documents/College/distributed/group-project/QuizMaster/user-service/src/main/java/com/example/user/repository/UserRepository.java
+/Users/Timis/Documents/College/distributed/group-project/QuizMaster/user-service/src/main/java/com/example/user/security/UserRole.java
+/Users/Timis/Documents/College/distributed/group-project/QuizMaster/user-service/src/main/java/com/example/user/service/UserService.java

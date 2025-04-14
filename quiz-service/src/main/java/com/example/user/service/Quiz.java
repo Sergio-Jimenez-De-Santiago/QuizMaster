@@ -9,11 +9,11 @@ public class Quiz {
     private static int COUNTER = 1000;
     private int id;
     private Map<Integer, String> questions = new HashMap<>();
-    private double timeLeft = 0;
+    private String timeLeft;
     private Map<Integer, String> teacherAnswers = new HashMap<>();
     private LocalDate duedate;
 
-    public Quiz(String title, Map<Integer, String> questions, double timeLeft, Map<Integer, String> teacherAnswers,LocalDate duedate) {
+    public Quiz(String title, Map<Integer, String> questions, String timeLeft, Map<Integer, String> teacherAnswers,LocalDate duedate) {
         this.id = COUNTER++;
         this.title = title;
         this.questions = questions;
@@ -42,7 +42,7 @@ public class Quiz {
         return id;
     }
 
-    public double getTimeLeft() {
+    public String getTimeLeft() {
         return timeLeft;
     }
 
