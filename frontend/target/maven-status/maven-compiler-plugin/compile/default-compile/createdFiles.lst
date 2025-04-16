@@ -1,6 +1,0 @@
-com/example/frontend/FrontendApplication.class
-com/example/frontend/controller/FrontendUserController.class
-com/example/frontend/dto/QuizDTO.class
-com/example/frontend/controller/FrontendQuizController.class
-com/example/frontend/model/Quiz.class
-com/example/frontend/model/User.class
