@@ -7,9 +7,9 @@ public class QuizDTO {
     private long id;
     private String title;
     private String timeLeft;
-    private LocalDate dueDate;
     private Map<Integer, String> questions;
     private Map<Integer, String> teacherAnswers;
+    private Map<Integer, String> studentAnswers;
 
     // Getters and setters
 
@@ -37,13 +37,6 @@ public class QuizDTO {
         this.timeLeft = timeLeft;
     }
 
-    public LocalDate getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(LocalDate dueDate) {
-        this.dueDate = dueDate;
-    }
 
     public Map<Integer, String> getQuestions() {
         return questions;
@@ -59,5 +52,12 @@ public class QuizDTO {
 
     public void setTeacherAnswers(Map<Integer, String> teacherAnswers) {
         this.teacherAnswers = teacherAnswers;
+    }
+    public Map<Integer, String> getStudentAnswers() {
+        return studentAnswers;
+    }
+
+    public void setStudentAnswers(Map<Integer, String> studentAnswers) {
+        this.studentAnswers = studentAnswers;
     }
 }

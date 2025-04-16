@@ -51,12 +51,6 @@
                     <input type="text" th:field="*{title}" class="form-control" id="title" placeholder="Enter quiz title">
                     <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="text-danger"></span>
                 </div>
-                <!-- Due Date -->
-                <div class="form-group">
-                    <label for="duedate" class="col-form-label">Due Date</label>
-                    <input type="date" th:field="*{dueDate}" class="form-control" id="dueDate" placeholder="Select due date">
-                    <span th:if="${#fields.hasErrors('dueDate')}" th:errors="*{duedate}" class="text-danger"></span>
-                </div>
                 <!-- Time Allowed (in minutes) -->
                 <div class="form-group">
                     <label for="timeLeft" class="col-form-label">Time (minutes)</label>

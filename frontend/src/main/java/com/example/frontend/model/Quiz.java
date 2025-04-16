@@ -13,10 +13,9 @@ public class Quiz {
 
     private String title;
     private String timeLeft;
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate dueDate;
     private Map<Integer, String> questions;
     private Map<Integer, String> teacherAnswers;
+    private Map<Integer, String> studentAnswers;
     @JsonIgnore
     private transient String questionsText;
     @JsonIgnore
@@ -63,14 +62,6 @@ public class Quiz {
         this.timeLeft = timeLeft;
     }
 
-    public LocalDate getDueDate() {
-        return dueDate;
-    }
-
-    public void setDueDate(LocalDate dueDate) {
-        this.dueDate = dueDate;
-    }
-
     public Map<Integer, String> getQuestions() {
         return questions;
     }
@@ -87,15 +78,23 @@ public class Quiz {
         this.teacherAnswers = teacherAnswers;
     }
 
+    public Map<Integer, String> getStudentAnswers() {
+        return teacherAnswers;
+    }
+
+    public void setStudentAnswers(Map<Integer, String> studentAnswers) {
+        this.studentAnswers = studentAnswers;
+    }
+
     @Override
     public String toString() {
         return "Quiz{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", timeLeft=" + timeLeft +
-                ", dueDate=" + dueDate +
                 ", questions=" + questions +
                 ", teacherAnswers=" + teacherAnswers +
+                ", studentAnswers=" + studentAnswers + 
                 '}';
     }
 

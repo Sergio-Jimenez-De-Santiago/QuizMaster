@@ -21,9 +21,6 @@ public class Quiz {
     @NotNull(message = "Time allowed is required")
     private String timeLeft;
 
-    @NotNull(message = "Due date is required")
-    private LocalDate dueDate;
-
     @ElementCollection
     @CollectionTable(name = "quiz_questions", joinColumns = @JoinColumn(name = "quiz_id"))
     @MapKeyColumn(name = "question_number")
@@ -35,6 +32,12 @@ public class Quiz {
     @MapKeyColumn(name = "question_number")
     @Column(name = "answer_text")
     private Map<Integer, String> teacherAnswers;
+
+    @ElementCollection
+    @CollectionTable(name = "quiz_teacher_answers", joinColumns = @JoinColumn(name = "quiz_id"))
+    @MapKeyColumn(name = "question_number")
+    @Column(name = "answer_text")
+    private Map<Integer, String> studentAnswers;
 
     // Getters and Setters
 
@@ -59,13 +62,6 @@ public class Quiz {
         this.timeLeft = timeLeft;
     }
 
-    public LocalDate getDueDate() {
-        return dueDate;
-    }
-    public void setDueDate(LocalDate dueDate) {
-        this.dueDate = dueDate;
-    }
-
     public Map<Integer, String> getQuestions() {
         return questions;
     }
@@ -79,6 +75,12 @@ public class Quiz {
     public void setTeacherAnswers(Map<Integer, String> teacherAnswers) {
         this.teacherAnswers = teacherAnswers;
     }
+    public Map<Integer, String> getStudentAnswers() {
+        return studentAnswers;
+    }
+    public void setStudentAnswers(Map<Integer, String> studentAnswers) {
+        this.studentAnswers = studentAnswers;
+    }
 
     @Override
     public String toString() {
@@ -86,9 +88,9 @@ public class Quiz {
                 "id=" + id +
                 ", title='" + title + '\'' +
                 ", timeLeft=" + timeLeft +
-                ", dueDate=" + dueDate +
                 ", questions=" + questions +
                 ", teacherAnswers=" + teacherAnswers +
+                ", studentAnswers=" + studentAnswers +
                 '}';
     }
 }

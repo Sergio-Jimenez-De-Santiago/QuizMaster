@@ -87,8 +87,6 @@ public class quizController {
         quiz.setQuestions(quizDTO.getQuestions());
         quiz.setTimeLeft(quizDTO.getTimeLeft());
         quiz.setTeacherAnswers(quizDTO.getTeacherAnswers());
-        quiz.setDueDate(quizDTO.getDueDate());
-
         quizService.createQuiz(quiz);
         String url = "http://" + getHost() + "/quizzes/"
                 + quiz.getTitle();
@@ -99,35 +97,15 @@ public class quizController {
                 .body(quiz);
     }
 
-    // @PostMapping("/quizzes/{quizId}/start")
-    // public ResponseEntity<Object> startQuiz(
-    // @PathVariable int quizId,
-    // @RequestParam String studentId) {
-
-    // Quiz quiz = quizzes.get(quizId);
-    // if (quiz == null) {
-    // return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quiz not found.");
-    // }
-
-    // String sessionKey = studentId + ":" + quizId;
-
-    // if (activeSessions.containsKey(sessionKey)) {
-    // return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Quiz already started
-    // or attempted.");
-    // }
-
-    // QuizSession session = new QuizSession(studentId, quizId);
-    // activeSessions.put(sessionKey, session);
-
-    // Map<String, Object> quizStartPayload = new HashMap<>();
-    // quizStartPayload.put("title", quiz.getTitle());
-    // quizStartPayload.put("instructions", "Good luck! You have " +
-    // quiz.getTimeLeft() + " minutes.");
-    // quizStartPayload.put("timeLeft", quiz.getTimeLeft());
-    // quizStartPayload.put("questions", quiz.getQuestions());
-
-    // return ResponseEntity.ok(quizStartPayload);
-    // }
+    @GetMapping(value = "/quizzes/{id}/start", produces = { "application/json" })
+    public ResponseEntity<Quiz> startQuiz(
+            @PathVariable Integer id) {
+        Quiz quiz = quizService.findById(id);
+        if (quiz == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(quiz);
+    }
     // @PostMapping("/quizzes/{quizId}/attempt")
     // public ResponseEntity<Object> attemptQuiz(
     // @PathVariable int quizId,
