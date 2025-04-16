@@ -51,8 +51,8 @@
 
         <!-- Display list of quizzes -->
         <ul class="list-group" th:if="${quizzes != null}">
-            <li class="list-group-item" th:each="quizUrl : ${quizzes}">
-                <a th:href="${quizUrl}">Quiz Title</a>
+            <li class="list-group-item" th:each="quiz : ${quizzes}">
+                <a th:href="@{/quizzes/{id}(id=${quiz.id})}" th:text="${quiz.title}"></a>
             </li>
         </ul>
 

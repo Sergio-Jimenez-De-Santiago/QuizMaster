@@ -13,7 +13,7 @@ public class Quiz {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    private int id;
 
     @NotBlank(message = "Title is mandatory")
     private String title;
@@ -41,7 +41,7 @@ public class Quiz {
     public long getId() {
         return id;
     }
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 

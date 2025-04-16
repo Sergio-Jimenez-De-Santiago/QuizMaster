@@ -29,13 +29,28 @@ public class FrontendQuizController {
         @GetMapping("/quizzes")
         public String listQuizzes(Model model, HttpSession session) {
                 try {
-                        ResponseEntity<String[]> response = restTemplate.getForEntity(
-                                        quizServiceUrl + "/quizzes", String[].class);
+                        ResponseEntity<Quiz[]> response = restTemplate.getForEntity(
+                                        quizServiceUrl + "/quizzes", Quiz[].class);
                         model.addAttribute("quizzes", response.getBody());
+                        System.out.println("got quiz" + response.getBody());
                 } catch (Exception e) {
                         model.addAttribute("error", "Could not load quizzes.");
                 }
                 return "quiz-list"; // name of the Thymeleaf template for quiz list
+        }
+
+        @GetMapping("/quizzes/{id}")
+        public String getQuiz(@PathVariable Integer id, Model model) {
+                try {
+                        ResponseEntity<Quiz> response = restTemplate.getForEntity(
+                                        quizServiceUrl + "/quizzes/" + id, Quiz.class);
+                        model.addAttribute("quiz", response.getBody());
+                        System.out.println("Got quiz with id: " + id);
+                        System.out.println(response.getBody());
+                } catch (Exception e) {
+                        model.addAttribute("error", "Could not load the quiz.");
+                }
+                return "quiz-detail"; 
         }
 
         // Show the form to create a quiz (only for ADMIN users)
@@ -109,7 +124,7 @@ public class FrontendQuizController {
                                         quizServiceUrl + "/quizzes", request, Quiz.class);
 
                         // If successfully created, redirect to quiz list or details page
-                        System.out.println(response);
+                        System.out.println("created" + response);
                         return "redirect:/quizzes";
                 } catch (HttpClientErrorException e) {
                         model.addAttribute("error", "Error creating quiz: " + e.getMessage());
