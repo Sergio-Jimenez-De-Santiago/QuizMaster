@@ -34,4 +34,8 @@ public class QuizService {
     public Quiz findById(int Id) {
         return quizRepository.findById(Id);
     }
+
+    public void deleteQuiz(int Id) {
+        quizRepository.deleteById((long)Id);
+    }
 }

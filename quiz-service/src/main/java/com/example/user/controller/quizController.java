@@ -70,14 +70,14 @@ public class quizController {
         return ResponseEntity.status(HttpStatus.OK).body(quiz);
     }
 
-    // @DeleteMapping("/quizzes/{id}")
-    // public ResponseEntity<Void> deleteQuiz(@PathVariable int id) {
-    // Quiz quiz = quizzes.remove(id);
-    // if (quiz == null) {
-    // return ResponseEntity.notFound().build();
-    // }
-    // return ResponseEntity.noContent().build(); // 204 No Content
-    // }
+    @DeleteMapping("/quizzes/{id}")
+    public ResponseEntity<Void> deleteQuiz(@PathVariable int id) {
+        quizService.deleteQuiz(id);
+        if (quizService.findById(id) == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.noContent().build(); // 204 No Content
+    }
 
     @PostMapping(value = "/quizzes", consumes = "application/json")
     public ResponseEntity<Quiz> createQuiz(

@@ -77,7 +77,13 @@
 
       <div class="mt-5">
         <a href="/quizzes" class="btn btn-secondary">Back to Quizzes</a>
+        <form th:action="@{'/quizzes/' + ${quiz.id}}" method="post" style="display:inline;">
+            <input type="hidden" name="_method" value="delete"/>
+            <button type="submit" class="btn btn-danger">Delete Quiz</button>
+        </form>
+        
       </div>
+    
     </div>
   </main>
 </body>

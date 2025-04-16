@@ -36,7 +36,7 @@ public class FrontendQuizController {
                 } catch (Exception e) {
                         model.addAttribute("error", "Could not load quizzes.");
                 }
-                return "quiz-list"; // name of the Thymeleaf template for quiz list
+                return "quiz-list";
         }
 
         @GetMapping("/quizzes/{id}")
@@ -51,6 +51,16 @@ public class FrontendQuizController {
                         model.addAttribute("error", "Could not load the quiz.");
                 }
                 return "quiz-detail"; 
+        }
+
+        @DeleteMapping("/quizzes/{id}")
+        public String deleteQuiz(@PathVariable Integer id,Model model) {
+                try {
+                        restTemplate.delete(quizServiceUrl + "/quizzes/" + id);
+                } catch (Exception e) {
+                        model.addAttribute("error", "Could not delete the quiz.");
+                }
+                return "redirect:/quizzes";
         }
 
         // Show the form to create a quiz (only for ADMIN users)
