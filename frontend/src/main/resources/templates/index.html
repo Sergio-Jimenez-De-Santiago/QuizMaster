@@ -69,7 +69,9 @@
                         </tbody>
                     </table>
                 </div>
-                <p class="my-5"><a href="/createquiz" class="btn btn-primary"><i class="fas fa-plus-circle mr-2"></i>Create new Quiz</a></p>
+                <p th:if="${loggedInUser != null and loggedInUser.role == 'ADMIN'}" class="my-5">
+                    <a href="/createquiz" class="btn btn-primary"><i class="fas fa-plus-circle mr-2"></i>Create new Quiz</a>
+                </p>
             </div>
         </div>
     </div>

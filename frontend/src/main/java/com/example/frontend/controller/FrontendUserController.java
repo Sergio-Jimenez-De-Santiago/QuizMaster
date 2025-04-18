@@ -21,7 +21,7 @@ public class FrontendUserController {
     @GetMapping("/signup")
     public String signupForm(Model model, HttpSession session) {
         if (session.getAttribute("loggedInUser") != null)
-            return "redirect:/index";
+            return "redirect:/quiz-list";
         model.addAttribute("user", new User());
         return "add-user";
     }
@@ -46,7 +46,7 @@ public class FrontendUserController {
     @GetMapping("/login")
     public String loginForm(Model model, HttpSession session) {
         if (session.getAttribute("loggedInUser") != null)
-            return "redirect:/index";
+            return "redirect:/quiz-list";
         model.addAttribute("user", new User());
         return "login";
     }
@@ -57,7 +57,7 @@ public class FrontendUserController {
             ResponseEntity<User> response = restTemplate.postForEntity(
                     userServiceUrl + "/api/users/login", user, User.class);
             session.setAttribute("loggedInUser", response.getBody());
-            return "redirect:/index";
+            return "redirect:/quiz-list";
         } catch (HttpClientErrorException.Unauthorized e) {
             model.addAttribute("error", true);
             return "login";

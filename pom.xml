@@ -16,6 +16,8 @@
         <module>frontend</module>
         <module>user-service</module>
         <module>quiz-service</module> 
+        <!-- <module>enrolment-service</module> -->
+        <!-- <module>module-service</module> -->
         <!-- <module>grading-service</module> -->
     </modules>
 

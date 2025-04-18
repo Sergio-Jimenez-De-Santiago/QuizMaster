@@ -85,10 +85,11 @@ public class FrontendQuizController {
                                         ResponseEntity<Quiz> quizResponse = restTemplate.getForEntity(
                                                         quizServiceUrl + "/quizzes/" + quizId, Quiz.class);
                                         Quiz quiz = quizResponse.getBody();
-                                        ResponseEntity<QuizSubmission> quizSubmisssionResponse = restTemplate.getForEntity(url, QuizSubmission.class);
+                                        ResponseEntity<QuizSubmission> quizSubmisssionResponse = restTemplate
+                                                        .getForEntity(url, QuizSubmission.class);
                                         QuizSubmission submission = quizSubmisssionResponse.getBody();
-                                        model.addAttribute("submission", submission);                                                                                
-                                        model.addAttribute("quiz", quiz); 
+                                        model.addAttribute("submission", submission);
+                                        model.addAttribute("quiz", quiz);
                                         return "submission-result";
                                 } else if (map.containsKey("questions")) {
                                         // It's a quiz attempt
@@ -247,6 +248,14 @@ public class FrontendQuizController {
                         model.addAttribute("error", "Error submitting quiz: " + e.getMessage());
                         return "redirect:/quizzes";
                 }
+        }
+
+        @GetMapping("/quiz-list")
+        public String showQuizList(Model model, HttpSession session) {
+                User user = (User) session.getAttribute("loggedInUser");
+                model.addAttribute("loggedInUser", user);
+                model.addAttribute("admin", user != null && "ADMIN".equals(user.getRole()));
+                return "quiz-list";
         }
 
 }
