@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>QuizMaster - Create Quiz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap and FontAwesome -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" 
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" 
+          integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
+    <!-- Your custom stylesheet -->
+    <link th:href="@{styles/header.css}" rel="stylesheet" />
+</head>
+<body>
+<header>
+    <a href="/index" class="headerBrand">QuizMaster</a>
+    <nav>
+        <div class="headerDiv">
+            <ul>
+                <!-- Div visible when no user is logged in -->
+                <div th:if="${loggedInUser == null}" class="user-actions">
+                    <li><a href="/login">Log in</a></li>
+                    <li><a href="/signup">Sign up</a></li>
+                </div>
+                <!-- Div visible when a user is logged in -->
+                <div th:if="${loggedInUser != null}" class="user-actions">
+                    <li><a href="/profile">Profile</a></li>
+                    <li><a href="/quizzes">Quizzes</a></li>
+                    <li><a href="/logout">Log out</a></li>
+                </div>
+            </ul>
+        </div>
+    </nav>
+</header>
+<main>
+    <div class="container my-5">
+        <h2 class="mb-5">Create Quiz</h2>
+        <!-- Display an error if one exists -->
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <p th:text="${error}"></p>
+        </div>
+      
+        <!-- Form visible only if the logged in user is ADMIN -->
+        <div>
+            <form action="#" th:action="@{/createquiz}" th:object="${quiz}" method="post">
+                <!-- Quiz Title -->
+                <div class="form-group">
+                    <label for="title" class="col-form-label">Quiz Title</label>
+                    <input type="text" th:field="*{title}" class="form-control" id="title" placeholder="Enter quiz title">
+                    <span th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="text-danger"></span>
+                </div>
+                <!-- Time Allowed (in minutes) -->
+                <div class="form-group">
+                    <label for="timeLeft" class="col-form-label">Time (minutes)</label>
+                    <input type="text" step="0.1" th:field="*{timeLeft}" class="form-control" id="timeLeft" placeholder="Enter time allowed">
+                    <span th:if="${#fields.hasErrors('timeLeft')}" th:errors="*{timeLeft}" class="text-danger"></span>
+                </div>
+                <!-- Quiz Questions (entered as one per line) -->
+                <div class="form-group">
+                    <label for="questions" class="col-form-label">Questions</label>
+                    <textarea th:field="*{questionsText}" rows="5" class="form-control" id="questions"
+                              placeholder="Enter each question on a new line"></textarea>
+                    <small class="form-text text-muted">Each line will be saved as a separate question.</small>
+                    <span th:if="${#fields.hasErrors('questionsText')}" th:errors="*{questionsText}" class="text-danger"></span>
+                </div>
+                <!-- Teacher Answers (entered as one per line, corresponding to questions) -->
+                <div class="form-group">
+                    <label for="teacherAnswers" class="col-form-label">Teacher Answers</label>
+                    <textarea th:field="*{teacherAnswersText}" rows="5" class="form-control" id="teacherAnswers"
+                              placeholder="Enter each answer on a new line"></textarea>
+                    <small class="form-text text-muted">Each line will correspond to the question with the same order.</small>
+                    <span th:if="${#fields.hasErrors('teacherAnswersText')}" th:errors="*{teacherAnswersText}" class="text-danger"></span>
+                </div>
+                <!-- Submit Button -->
+                <div class="row">
+                    <div class="col-md-6 mt-5">
+                        <input type="submit" class="btn btn-primary" value="Create Quiz">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+</body>
+</html>

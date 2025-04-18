@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>QuizMaster</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
+    <link th:href="@{styles/header.css}" rel="stylesheet" />
+</head>
+
+<body>
+<header>
+    <a href="/index" class="headerBrand" >QuizMaster</a>
+    <nav>
+        <div class="headerDiv">
+            <ul>
+                <!-- Div visible when no user is logged in -->
+                <div th:if="${loggedInUser == null}" class="user-actions">
+                    <li><a href="/login">Log in</a></li>
+                    <li><a href="/signup">Sign up</a></li>
+                </div>
+                <!-- Div visible when a user is logged in -->
+                <div th:if="${loggedInUser != null}" class="user-actions">
+                    <li><a href="/profile">Profile</a></li>
+                    <li><a href="/quizzes">Quizzes</a></li>
+                    <li><a href="/logout">Log out</a></li>
+                </div>
+            </ul>
+        </div>
+    </nav>
+</header>
+<main>
+    <div th:switch="${items}" class="container my-5">
+        <div class="row">
+            <div class="col-md-6">
+                <h2 th:case="null">No quizzes yet!</h2>
+                <div th:case="*">
+                    <h2 class="my-5">Items</h2>
+                    <table class="table table-striped table-responsive-md">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th th:if="${admin}">Edit</th>
+                            <th>See more</th>
+                            <th th:if="${admin}">Visible</th>
+                            <th th:if="${loggedInUser != null}">Add to cart</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${items}" th:if="${item.visible} or ${admin}">
+                            <td th:text="${item.name}"></td>
+                            <td th:text="${item.price}"></td>
+                            <td th:if="${admin}"><a th:href="@{/editItem/{id}(id=${item.id})}" class="btn btn-primary"><i class="fas fa-edit ml-2"></i></a></td>
+                            <td><a th:href="@{/showItem/{id}(id=${item.id})}" class="btn btn-primary"><i class="fas fa-mouse-pointer"></i></a></td>
+                            <td th:if="${admin}">
+                                <span th:if="${item.visible}">Yes</span>
+                                <span th:if="${not item.visible}">No</span>
+                            </td>
+                            <td th:if="${loggedInUser != null}">
+                                <form th:action="@{/addToCart/{id}(id=${item.id})}" method="post">
+                                    <input type="submit" value="Add to Cart" class="btn btn-primary">
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p th:if="${loggedInUser != null and loggedInUser.role == 'ADMIN'}" class="my-5">
+                    <a href="/createquiz" class="btn btn-primary"><i class="fas fa-plus-circle mr-2"></i>Create new Quiz</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>
