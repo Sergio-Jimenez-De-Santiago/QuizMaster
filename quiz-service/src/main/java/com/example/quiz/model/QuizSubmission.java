@@ -1,22 +1,27 @@
-package com.example.user.dto;
+package com.example.quiz.model;
 
+import jakarta.persistence.*;
 import java.util.Map;
 
-public class QuizSubmissionDTO {
+@Entity
+@Table(name = "quiz_submissions")
+public class QuizSubmission {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Long studentId;
+
     private Integer quizId;
+
+    @ElementCollection
+    @CollectionTable(name = "submission_answers", joinColumns = @JoinColumn(name = "submission_id"))
+    @MapKeyColumn(name = "question_number")
+    @Column(name = "answer_text")
     private Map<Integer, String> studentAnswers;
 
-    public QuizSubmissionDTO() {
-    }
-
-    public QuizSubmissionDTO(Long id, Long studentId, Integer quizId, Map<Integer, String> studentAnswers) {
-        this.id = id;
-        this.studentId = studentId;
-        this.quizId = quizId;
-        this.studentAnswers = studentAnswers;
-    }
+    // Getters and Setters
 
     public Long getId() {
         return id;
@@ -50,14 +55,5 @@ public class QuizSubmissionDTO {
         this.studentAnswers = studentAnswers;
     }
 
-
-    @Override
-    public String toString() {
-        return "QuizSubmissionDTO{" +
-                "id=" + id +
-                ", studentId=" + studentId +
-                ", quizId=" + quizId +
-                ", studentAnswers=" + studentAnswers +
-                '}';
-    }
+    
 }

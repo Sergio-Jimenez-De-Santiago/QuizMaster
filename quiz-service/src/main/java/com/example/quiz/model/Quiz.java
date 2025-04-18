@@ -1,4 +1,4 @@
-package com.example.user.model;
+package com.example.quiz.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

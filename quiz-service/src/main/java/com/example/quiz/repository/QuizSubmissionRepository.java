@@ -1,7 +1,8 @@
-package com.example.user.repository;
+package com.example.quiz.repository;
 
-import com.example.user.model.QuizSubmission;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.example.quiz.model.QuizSubmission;
 
 import java.util.Optional;
 import java.util.List;

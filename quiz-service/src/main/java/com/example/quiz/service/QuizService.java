@@ -1,4 +1,4 @@
-package com.example.user.service;
+package com.example.quiz.service;
 
 import java.util.List;
 import java.util.Optional;
@@ -6,10 +6,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.user.model.Quiz;
-import com.example.user.model.QuizSubmission;
-import com.example.user.repository.QuizRepository;
-import com.example.user.repository.QuizSubmissionRepository;
+import com.example.quiz.model.Quiz;
+import com.example.quiz.model.QuizSubmission;
+import com.example.quiz.repository.QuizRepository;
+import com.example.quiz.repository.QuizSubmissionRepository;
 
 import jakarta.validation.Valid;
 

@@ -1,4 +1,4 @@
-package com.example.user.service;
+package com.example.quiz.service;
 
 import java.util.HashMap;
 import java.util.Map;

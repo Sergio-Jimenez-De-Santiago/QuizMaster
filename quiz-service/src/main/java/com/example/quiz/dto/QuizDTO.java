@@ -1,4 +1,4 @@
-package com.example.user.dto;
+package com.example.quiz.dto;
 
 import java.time.LocalDate;
 import java.util.Map;
