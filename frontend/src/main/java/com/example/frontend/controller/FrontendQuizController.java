@@ -1,12 +1,14 @@
 package com.example.frontend.controller;
 
 import com.example.frontend.dto.QuizDTO;
+import com.example.frontend.dto.QuizSubmissionDTO;
 import com.example.frontend.model.Quiz;
 import com.example.frontend.model.User;
 
 import jakarta.servlet.http.HttpSession;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -21,17 +23,20 @@ import org.springframework.web.client.HttpClientErrorException;
 public class FrontendQuizController {
 
         @Value("${quiz.service.url}")
-        private String quizServiceUrl; // URL for the quiz service
+        private String quizServiceUrl;
 
         private final RestTemplate restTemplate = new RestTemplate();
 
-        // Display list of quizzes
         @GetMapping("/quizzes")
         public String listQuizzes(Model model, HttpSession session) {
                 try {
                         ResponseEntity<Quiz[]> response = restTemplate.getForEntity(
                                         quizServiceUrl + "/quizzes", Quiz[].class);
                         model.addAttribute("quizzes", response.getBody());
+                        Object userObj = session.getAttribute("loggedInUser");
+                        User user = (User) userObj;
+                        model.addAttribute("USER", user != null && "USER".equals(user.getRole()));
+                        model.addAttribute("loggedInUser", user);
                         System.out.println("got quiz" + response.getBody());
                 } catch (Exception e) {
                         model.addAttribute("error", "Could not load quizzes.");
@@ -59,19 +64,45 @@ public class FrontendQuizController {
         }
 
         @GetMapping("/quizzes/{id}/start")
-        public String startQuiz(@PathVariable Integer id, Model model) {
-                try {
-                        ResponseEntity<Quiz> response = restTemplate.getForEntity(
-                                        quizServiceUrl + "/quizzes/" + id, Quiz.class);
-                        model.addAttribute("quiz", response.getBody());
-                        System.out.println(response.getBody());
-                } catch (Exception e) {
-                        model.addAttribute("error", "Could not load the quiz.");
-                }
-                Map<Integer, String> studentAnswers = new HashMap<>();
-                model.addAttribute("quizSession", studentAnswers);
+        public String startQuiz(@PathVariable Integer id, Model model, HttpSession session) {
+                User user = (User) session.getAttribute("loggedInUser");
 
-                return "quiz-attempt";
+                if (user == null) {
+                        return "redirect:/login";
+                }
+
+                try {
+                        String url = quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + user.getId();
+
+                        ResponseEntity<Object> response = restTemplate.getForEntity(url, Object.class);
+                        Object body = response.getBody();
+
+                        if (body instanceof LinkedHashMap map) {
+                                if (map.containsKey("studentAnswers")) {
+                                        Integer quizId = (Integer) map.get("quizId");
+
+                                        ResponseEntity<Quiz> quizResponse = restTemplate.getForEntity(
+                                                        quizServiceUrl + "/quizzes/" + quizId, Quiz.class);
+                                        Quiz quiz = quizResponse.getBody();
+
+                                        model.addAttribute("submission", map); 
+                                        model.addAttribute("quiz", quiz); 
+                                        return "submission-result";
+                                } else if (map.containsKey("questions")) {
+                                        // It's a quiz attempt
+                                        model.addAttribute("quiz", map);
+                                        model.addAttribute("quizSession", new HashMap<Integer, String>());
+                                        return "quiz-attempt";
+                                }
+                        }
+
+                        model.addAttribute("error", "Unexpected response format.");
+                        return "redirect:/quizzes";
+
+                } catch (Exception e) {
+                        model.addAttribute("error", "Error loading quiz: " + e.getMessage());
+                        return "redirect:/quizzes";
+                }
         }
 
         @DeleteMapping("/quizzes/{id}")
@@ -167,13 +198,11 @@ public class FrontendQuizController {
                         @RequestParam Map<String, String> allParams,
                         HttpSession session,
                         Model model) {
-                // Extract student answers from form parameters
                 Map<Integer, String> studentAnswers = new HashMap<>();
 
                 for (Map.Entry<String, String> entry : allParams.entrySet()) {
                         String key = entry.getKey();
                         if (key.startsWith("studentAnswers[")) {
-                                // Extract question number from key
                                 String indexStr = key.substring("studentAnswers[".length(), key.length() - 1);
                                 try {
                                         int index = Integer.parseInt(indexStr);
@@ -184,34 +213,37 @@ public class FrontendQuizController {
                         }
                 }
 
-                // Optionally: attach student user info
                 User user = (User) session.getAttribute("loggedInUser");
 
-                // Now send this info to the backend
                 try {
                         String url = quizServiceUrl + "/quizzes/" + id + "/submit";
 
                         HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
 
-                        // This map contains the answers
-                        Map<String, Object> requestBody = new HashMap<>();
-                        requestBody.put("studentAnswers", studentAnswers);
+                        QuizSubmissionDTO submissionDTO = new QuizSubmissionDTO();
+                        submissionDTO.setQuizId(id);
+                        submissionDTO.setStudentAnswers(studentAnswers);
                         if (user != null) {
-                                requestBody.put("studentId", user.getId()); // Optional, if needed
+                                submissionDTO.setStudentId((user.getId()));
                         }
 
-                        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-                        ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+                        HttpEntity<QuizSubmissionDTO> request = new HttpEntity<>(submissionDTO, headers);
+
+                        ResponseEntity<QuizSubmissionDTO> response = restTemplate.postForEntity(
+                                        url, request, QuizSubmissionDTO.class);
+
+                        QuizSubmissionDTO submission = response.getBody();
 
                         System.out.println("Submitted answers: " + studentAnswers);
-                        System.out.println("Backend response: " + response.getBody());
+                        System.out.println("Received submission DTO: " + submission);
 
                         model.addAttribute("message", "Quiz submitted successfully!");
+
                         return "redirect:/quizzes";
                 } catch (Exception e) {
                         model.addAttribute("error", "Error submitting quiz: " + e.getMessage());
-                        return "quiz-attempt";
+                        return "redirect:/quizzes";
                 }
         }
 

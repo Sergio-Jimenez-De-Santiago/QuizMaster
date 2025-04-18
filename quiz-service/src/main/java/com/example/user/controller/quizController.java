@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,9 +22,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import com.example.user.model.Quiz;
+import com.example.user.model.QuizSubmission;
 import com.example.user.service.QuizService;
 import com.example.user.service.QuizSession;
 import com.example.user.dto.QuizDTO;
+import com.example.user.dto.QuizSubmissionDTO;
 
 @RestController
 public class quizController {
@@ -69,7 +73,6 @@ public class quizController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(quiz);
     }
-
     @DeleteMapping("/quizzes/{id}")
     public ResponseEntity<Void> deleteQuiz(@PathVariable int id) {
         quizService.deleteQuiz(id);
@@ -97,40 +100,33 @@ public class quizController {
                 .body(quiz);
     }
 
-    @GetMapping(value = "/quizzes/{id}/start", produces = { "application/json" })
-    public ResponseEntity<Quiz> startQuiz(
-            @PathVariable Integer id) {
+    @GetMapping("/quizzes/{id}/start")
+    public ResponseEntity<?> startQuiz(@PathVariable Integer id, @RequestParam Long studentId) {
+        Optional<QuizSubmission> existingSubmission = quizService.findSubmission(studentId, id);
+
+        if (existingSubmission.isPresent()) {
+            return ResponseEntity.ok(existingSubmission); 
+        }
+
         Quiz quiz = quizService.findById(id);
         if (quiz == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quiz not found");
         }
-        return ResponseEntity.status(HttpStatus.OK).body(quiz);
+
+        return ResponseEntity.ok(quiz);
     }
-    // @PostMapping("/quizzes/{quizId}/attempt")
-    // public ResponseEntity<Object> attemptQuiz(
-    // @PathVariable int quizId,
-    // @RequestParam String studentId,
-    // @RequestParam Map<Integer, String> studentAnswers) {
 
-    // String sessionKey = studentId + ":" + quizId;
+    @PostMapping("/quizzes/{id}/submit")
+    public ResponseEntity<Object> submitQuiz(
+            @RequestBody QuizSubmissionDTO quizSubmissionDTO) {
 
-    // QuizSession activeSession = activeSessions.get(sessionKey);
+        QuizSubmission quizSubmission = new QuizSubmission();
+        quizSubmission.setQuizId(quizSubmissionDTO.getQuizId());
+        quizSubmission.setStudentId(quizSubmissionDTO.getStudentId());
+        quizSubmission.setStudentAnswers(quizSubmissionDTO.getStudentAnswers());
+        quizService.submit(quizSubmission);
+        return ResponseEntity.ok("Quiz attempt submitted successfully.");
 
-    // if (activeSession == null) {
-    // return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quiz session not
-    // found.");
-    // }
-
-    // if (activeSession.isSubmitted()) {
-    // return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quiz already
-    // submitted.");
-    // }
-
-    // activeSession.setStudentAnswers(studentAnswers);
-    // activeSession.setSubmitted();
-
-    // return ResponseEntity.ok("Quiz attempt submitted successfully.");
-
-    // }
+    }
 
 }

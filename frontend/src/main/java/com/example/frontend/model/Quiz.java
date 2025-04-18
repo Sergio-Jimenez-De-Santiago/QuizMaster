@@ -10,12 +10,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Quiz {
     private long id;
-
     private String title;
     private String timeLeft;
     private Map<Integer, String> questions;
     private Map<Integer, String> teacherAnswers;
-    private Map<Integer, String> studentAnswers;
     @JsonIgnore
     private transient String questionsText;
     @JsonIgnore
@@ -78,13 +76,7 @@ public class Quiz {
         this.teacherAnswers = teacherAnswers;
     }
 
-    public Map<Integer, String> getStudentAnswers() {
-        return teacherAnswers;
-    }
 
-    public void setStudentAnswers(Map<Integer, String> studentAnswers) {
-        this.studentAnswers = studentAnswers;
-    }
 
     @Override
     public String toString() {
@@ -94,7 +86,6 @@ public class Quiz {
                 ", timeLeft=" + timeLeft +
                 ", questions=" + questions +
                 ", teacherAnswers=" + teacherAnswers +
-                ", studentAnswers=" + studentAnswers + 
                 '}';
     }
 

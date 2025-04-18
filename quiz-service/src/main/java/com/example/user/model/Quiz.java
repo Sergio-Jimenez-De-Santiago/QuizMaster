@@ -33,11 +33,6 @@ public class Quiz {
     @Column(name = "answer_text")
     private Map<Integer, String> teacherAnswers;
 
-    @ElementCollection
-    @CollectionTable(name = "quiz_teacher_answers", joinColumns = @JoinColumn(name = "quiz_id"))
-    @MapKeyColumn(name = "question_number")
-    @Column(name = "answer_text")
-    private Map<Integer, String> studentAnswers;
 
     // Getters and Setters
 
@@ -75,13 +70,6 @@ public class Quiz {
     public void setTeacherAnswers(Map<Integer, String> teacherAnswers) {
         this.teacherAnswers = teacherAnswers;
     }
-    public Map<Integer, String> getStudentAnswers() {
-        return studentAnswers;
-    }
-    public void setStudentAnswers(Map<Integer, String> studentAnswers) {
-        this.studentAnswers = studentAnswers;
-    }
-
     @Override
     public String toString() {
         return "Quiz{" +
@@ -90,7 +78,6 @@ public class Quiz {
                 ", timeLeft=" + timeLeft +
                 ", questions=" + questions +
                 ", teacherAnswers=" + teacherAnswers +
-                ", studentAnswers=" + studentAnswers +
                 '}';
     }
 }
