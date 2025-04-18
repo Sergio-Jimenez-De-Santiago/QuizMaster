@@ -1,23 +1,21 @@
 package com.example.enrolment.controller;
 
-import com.example.user.assembler.UserDTOModelAssembler;
-import com.example.user.model.User;
-import com.example.user.dto.UserProfileDTO;
-import com.example.user.service.UserService;
 
 import jakarta.validation.Valid;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.enrolment.model.Enrolment;
+import com.example.enrolment.service.EnrolmentService;
 @RestController
 public class EnrolmentController {
 
+    @Autowired
     private final EnrolmentService enrolmentService;
 
     public EnrolmentController(EnrolmentService enrolmentService) {

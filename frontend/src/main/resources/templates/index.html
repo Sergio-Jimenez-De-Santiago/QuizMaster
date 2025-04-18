@@ -25,6 +25,7 @@
                 <!-- Div visible when a user is logged in -->
                 <div th:if="${loggedInUser != null}" class="user-actions">
                     <li><a href="/profile">Profile</a></li>
+                    <li><a href="/modules">All modules</a></li>
                     <li><a href="/quizzes">Quizzes</a></li>
                     <li><a href="/logout">Log out</a></li>
                 </div>
@@ -70,7 +71,7 @@
                     </table>
                 </div>
                 <p th:if="${loggedInUser != null and loggedInUser.role == 'ADMIN'}" class="my-5">
-                    <a href="/createquiz" class="btn btn-primary"><i class="fas fa-plus-circle mr-2"></i>Create new Quiz</a>
+                    <a href="/create-module" class="btn btn-primary"><i class="fas fa-plus-circle mr-2"></i>Create module</a>
                 </p>
             </div>
         </div>

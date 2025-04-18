@@ -40,6 +40,29 @@ services:
         ports:
             - "8082:8082"    
 
+    course-service:
+        build:
+            context: ./course-service
+        depends_on:
+            - db
+        restart: always
+        environment:
+            POSTGRES_DB: newdb
+            POSTGRES_PASSWORD: password
+        ports:
+            - "8085:8085"
+
+    enrolment-service:
+        build:
+            context: ./enrolment-service
+        depends_on:
+            - db
+        restart: always
+        environment:
+            POSTGRES_DB: newdb
+            POSTGRES_PASSWORD: password
+        ports:
+            - "8084:8084"        
 
     frontend:
         build:

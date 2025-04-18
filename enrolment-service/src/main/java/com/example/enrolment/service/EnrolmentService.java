@@ -1,15 +1,16 @@
 package com.example.enrolment.service;
 
-import com.example.user.model.User;
-import com.example.user.repository.UserRepository;
+import com.example.enrolment.repository.EnrolmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.validation.Valid;
 import java.util.List;
-
+import com.example.enrolment.model.Enrolment;
+import java.util.Optional;
 @Service
 public class EnrolmentService {
+
     private final EnrolmentRepository enrolmentRepository;
 
     public EnrolmentService(EnrolmentRepository enrolmentRepository) {
