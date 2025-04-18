@@ -3,6 +3,7 @@ package com.example.frontend.controller;
 import com.example.frontend.dto.QuizDTO;
 import com.example.frontend.dto.QuizSubmissionDTO;
 import com.example.frontend.model.Quiz;
+import com.example.frontend.model.QuizSubmission;
 import com.example.frontend.model.User;
 
 import jakarta.servlet.http.HttpSession;
@@ -84,8 +85,9 @@ public class FrontendQuizController {
                                         ResponseEntity<Quiz> quizResponse = restTemplate.getForEntity(
                                                         quizServiceUrl + "/quizzes/" + quizId, Quiz.class);
                                         Quiz quiz = quizResponse.getBody();
-
-                                        model.addAttribute("submission", map); 
+                                        ResponseEntity<QuizSubmission> quizSubmisssionResponse = restTemplate.getForEntity(url, QuizSubmission.class);
+                                        QuizSubmission submission = quizSubmisssionResponse.getBody();
+                                        model.addAttribute("submission", submission);                                                                                
                                         model.addAttribute("quiz", quiz); 
                                         return "submission-result";
                                 } else if (map.containsKey("questions")) {

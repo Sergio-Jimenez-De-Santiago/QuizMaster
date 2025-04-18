@@ -51,7 +51,6 @@
                         <span th:text="${submission.studentAnswers[entry.key]} ?: 'Not answered'">Answer</span>
                     </p>
 
-                    <!-- Optional: show correct answer for teacher/admin -->
                     <div class="mt-2" 
                          th:if="${loggedInUser != null and loggedInUser.role != 'USER'}">
                         <strong>Teacher's Answer:</strong>

@@ -33,7 +33,7 @@ public class FrontendUserController {
             ResponseEntity<User> response = restTemplate.postForEntity(
                     userServiceUrl + "/api/users/register", user, User.class);
             session.setAttribute("loggedInUser", response.getBody());
-            return "redirect:/index";
+            return "redirect:/quiz-list";
         } catch (HttpClientErrorException e) {
             model.addAttribute("error", "Email already exists 1");
             return "add-user";
