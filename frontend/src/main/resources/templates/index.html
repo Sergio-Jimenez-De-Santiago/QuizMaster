@@ -33,46 +33,39 @@
         </div>
     </nav>
 </header>
-<main>
-    <div th:switch="${items}" class="container my-5">
+<main class="container">
+    <div th:if="${loggedInUser.role == 'STUDENT'}">
+        <h3>Your Enrolled Courses</h3>
         <div class="row">
-            <div class="col-md-6">
-                <h2 th:case="null">No quizzes yet!</h2>
-                <div th:case="*">
-                    <h2 class="my-5">Items</h2>
-                    <table class="table table-striped table-responsive-md">
-                        <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th th:if="${admin}">Edit</th>
-                            <th>See more</th>
-                            <th th:if="${admin}">Visible</th>
-                            <th th:if="${loggedInUser != null}">Add to cart</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="item : ${items}" th:if="${item.visible} or ${admin}">
-                            <td th:text="${item.name}"></td>
-                            <td th:text="${item.price}"></td>
-                            <td th:if="${admin}"><a th:href="@{/editItem/{id}(id=${item.id})}" class="btn btn-primary"><i class="fas fa-edit ml-2"></i></a></td>
-                            <td><a th:href="@{/showItem/{id}(id=${item.id})}" class="btn btn-primary"><i class="fas fa-mouse-pointer"></i></a></td>
-                            <td th:if="${admin}">
-                                <span th:if="${item.visible}">Yes</span>
-                                <span th:if="${not item.visible}">No</span>
-                            </td>
-                            <td th:if="${loggedInUser != null}">
-                                <form th:action="@{/addToCart/{id}(id=${item.id})}" method="post">
-                                    <input type="submit" value="Add to Cart" class="btn btn-primary">
-                                </form>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+            <div class="col-md-4 mb-4" th:each="course : ${courses}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${course.name}"></h5>
+                        <p class="card-text" th:text="${course.description}"></p>
+                        <a th:href="@{'/courses/' + ${course.id}}" class="btn btn-primary">Go to Course</a>
+                    </div>
                 </div>
-                <p th:if="${loggedInUser != null and loggedInUser.role == 'ADMIN'}" class="my-5">
-                    <a href="/create-course" class="btn btn-primary"><i class="fas fa-plus-circle mr-2"></i>Create course</a>
-                </p>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${loggedInUser.role == 'TEACHER'}">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Your Created Courses</h3>
+            <div>
+                <a href="/create-course" class="btn btn-success mr-2">Create Course</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 mb-4" th:each="course : ${courses}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${course.name}"></h5>
+                        <p class="card-text" th:text="${course.description}"></p>
+                        <a th:href="@{'/courses/' + ${course.id}}" class="btn btn-outline-primary">Manage Course</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

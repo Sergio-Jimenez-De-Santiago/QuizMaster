@@ -2,6 +2,7 @@ package com.example.frontend.controller;
 
 import jakarta.servlet.http.HttpSession;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.example.frontend.model.User;
 import com.example.frontend.model.Course;
+import com.example.frontend.model.Enrolment;
 
 @Controller
 public class FrontendCourseController {
@@ -21,7 +23,49 @@ public class FrontendCourseController {
     @Value("${course.service.url}")
     private String courseServiceUrl;
 
+    @Value("${enrolment.service.url}")
+    private String enrolmentServiceUrl;
+
     private final RestTemplate restTemplate = new RestTemplate();
+
+
+    @GetMapping({"/", "/index"})
+    public String showIndex(Model model, HttpSession session) {
+        User user = (User) session.getAttribute("loggedInUser");
+    
+        if (user == null) {
+            return "redirect:/login";
+        }
+    
+        model.addAttribute("loggedInUser", user);
+        model.addAttribute("teacher", "TEACHER".equals(user.getRole()));
+    
+        try {
+            if ("STUDENT".equals(user.getRole())) {
+                ResponseEntity<Enrolment[]> enrolmentResponse = restTemplate.getForEntity(
+                    enrolmentServiceUrl + "/enrolments/student/" + user.getId(), Enrolment[].class);
+                List<Enrolment> enrolments = Arrays.asList(enrolmentResponse.getBody());
+    
+                List<Course> courses = new ArrayList<>();
+                for (Enrolment enrolment : enrolments) {
+                    ResponseEntity<Course> courseResponse = restTemplate.getForEntity(
+                        courseServiceUrl + "/courses/" + enrolment.getCourseId(), Course.class);
+                    courses.add(courseResponse.getBody());
+                }
+    
+                model.addAttribute("courses", courses);
+            } else {
+                ResponseEntity<Course[]> response = restTemplate.getForEntity(
+                    courseServiceUrl + "/courses/teacher/" + user.getId(), Course[].class);
+                model.addAttribute("courses", Arrays.asList(response.getBody()));
+            }
+        } catch (Exception e) {
+            model.addAttribute("error", "Could not load courses.");
+            model.addAttribute("courses", List.of());
+        }
+    
+        return "index";
+    }    
 
     @GetMapping("/courses")
     public String viewCourses(Model model, HttpSession session) {
@@ -55,7 +99,7 @@ public class FrontendCourseController {
         }
         Object userObj = session.getAttribute("loggedInUser");
         User user = (User) userObj;
-        model.addAttribute("USER", user != null && "USER".equals(user.getRole()));
+        model.addAttribute("STUDENT", user != null && "STUDENT".equals(user.getRole()));
         System.out.println(user.getRole());
         model.addAttribute("loggedInUser", user);
         return "course-details";
@@ -65,7 +109,7 @@ public class FrontendCourseController {
     public String showCreateCourseForm(Model model, HttpSession session) {
         User user = (User) session.getAttribute("loggedInUser");
 
-        if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
+        if (user == null || !"TEACHER".equalsIgnoreCase(user.getRole())) {
             return "redirect:/login";
         }
 

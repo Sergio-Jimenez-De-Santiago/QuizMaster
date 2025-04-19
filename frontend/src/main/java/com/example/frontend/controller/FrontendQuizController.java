@@ -36,7 +36,7 @@ public class FrontendQuizController {
                         model.addAttribute("quizzes", response.getBody());
                         Object userObj = session.getAttribute("loggedInUser");
                         User user = (User) userObj;
-                        model.addAttribute("USER", user != null && "USER".equals(user.getRole()));
+                        model.addAttribute("STUDENT", user != null && "STUDENT".equals(user.getRole()));
                         model.addAttribute("loggedInUser", user);
                         System.out.println("got quiz" + response.getBody());
                 } catch (Exception e) {
@@ -58,7 +58,7 @@ public class FrontendQuizController {
                 }
                 Object userObj = session.getAttribute("loggedInUser");
                 User user = (User) userObj;
-                model.addAttribute("USER", user != null && "USER".equals(user.getRole()));
+                model.addAttribute("STUDENT", user != null && "STUDENT".equals(user.getRole()));
                 System.out.println(user.getRole());
                 model.addAttribute("loggedInUser", user);
                 return "quiz-detail";
@@ -118,7 +118,7 @@ public class FrontendQuizController {
                 return "redirect:/quizzes";
         }
 
-        // Show the form to create a quiz (only for ADMIN users)
+        // Show the form to create a quiz (only for TEACHER users)
         @GetMapping("/createquiz")
         public String createQuizForm(Model model, HttpSession session) {
                 Object userObj = session.getAttribute("loggedInUser");
@@ -129,8 +129,8 @@ public class FrontendQuizController {
 
                 User user = (User) userObj;
 
-                if (!"ADMIN".equals(user.getRole())) {
-                        model.addAttribute("error", "Only admins can create quizzes.");
+                if (!"TEACHER".equals(user.getRole())) {
+                        model.addAttribute("error", "Only teachers can create quizzes.");
                         model.addAttribute("loggedInUser", user);
                         return "create-quiz"; // still return view, but with warning
                 }
@@ -153,10 +153,10 @@ public class FrontendQuizController {
         // Handle submission of the create quiz form
         @PostMapping("/createquiz")
         public String createQuiz(@ModelAttribute Quiz quiz, Model model, HttpSession session) {
-                // Only allow ADMIN users to create a quiz
+                // Only allow TEACHER users to create a quiz
                 User user = (User) session.getAttribute("loggedInUser");
 
-                if (user == null || !"ADMIN".equals(user.getRole())) {
+                if (user == null || !"TEACHER".equals(user.getRole())) {
                         model.addAttribute("error", "You do not have permission to create quizzes.");
                         return "create-quiz";
                 }
@@ -254,7 +254,7 @@ public class FrontendQuizController {
         public String showQuizList(Model model, HttpSession session) {
                 User user = (User) session.getAttribute("loggedInUser");
                 model.addAttribute("loggedInUser", user);
-                model.addAttribute("admin", user != null && "ADMIN".equals(user.getRole()));
+                model.addAttribute("teacher", user != null && "TEACHER".equals(user.getRole()));
                 return "quiz-list";
         }
 

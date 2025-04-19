@@ -62,7 +62,7 @@
           <li class="list-group-item">
             <strong th:text="${entry.key}">Question #</strong>:
             <span th:text="${entry.value}">Question Text</span>
-            <div class="mt-3" th:if="${loggedInUser != null and loggedInUser.role != 'USER'}">
+            <div class="mt-3" th:if="${loggedInUser != null and loggedInUser.role != 'STUDENT'}">
                 <strong>Teacher's Answer:</strong>
                 <span th:text="${quiz.teacherAnswers.get(entry.key)}">Answer Text</span>
               </div>
@@ -73,11 +73,11 @@
 
       <div class="mt-5">
         <a href="/quizzes" class="btn btn-secondary">Back to Quizzes</a>
-        <a th:if="${USER}"
+        <a th:if="${STUDENT}"
         th:href="@{/quizzes/{id}/start(id=${quiz.id})}" 
         class="btn btn-secondary">Start Quiz</a>
         <form th:action="@{'/quizzes/' + ${quiz.id}}" method="post" style="display:inline;" 
-        th:if="${loggedInUser != null and loggedInUser.role == 'ADMIN'}">
+        th:if="${loggedInUser != null and loggedInUser.role == 'TEACHER'}">
       <input type="hidden" name="_method" value="delete"/>
       <button type="submit" class="btn btn-danger">Delete Quiz</button>
   </form>

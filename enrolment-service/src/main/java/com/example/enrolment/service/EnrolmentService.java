@@ -13,6 +13,7 @@ public class EnrolmentService {
 
     private final EnrolmentRepository enrolmentRepository;
 
+    @Autowired
     public EnrolmentService(EnrolmentRepository enrolmentRepository) {
         this.enrolmentRepository = enrolmentRepository;
     }

@@ -21,7 +21,7 @@ public class FrontendUserController {
     @GetMapping("/signup")
     public String signupForm(Model model, HttpSession session) {
         if (session.getAttribute("loggedInUser") != null)
-            return "redirect:/quiz-list";
+            return "redirect:/index";
         model.addAttribute("user", new User());
         return "add-user";
     }
@@ -33,7 +33,7 @@ public class FrontendUserController {
             ResponseEntity<User> response = restTemplate.postForEntity(
                     userServiceUrl + "/api/users/register", user, User.class);
             session.setAttribute("loggedInUser", response.getBody());
-            return "redirect:/quiz-list";
+            return "redirect:/index";
         } catch (HttpClientErrorException e) {
             model.addAttribute("error", "Email already exists 1");
             return "add-user";
@@ -46,7 +46,7 @@ public class FrontendUserController {
     @GetMapping("/login")
     public String loginForm(Model model, HttpSession session) {
         if (session.getAttribute("loggedInUser") != null)
-            return "redirect:/quiz-list";
+            return "redirect:/index";
         model.addAttribute("user", new User());
         return "login";
     }
@@ -57,7 +57,7 @@ public class FrontendUserController {
             ResponseEntity<User> response = restTemplate.postForEntity(
                     userServiceUrl + "/api/users/login", user, User.class);
             session.setAttribute("loggedInUser", response.getBody());
-            return "redirect:/quiz-list";
+            return "redirect:/index";
         } catch (HttpClientErrorException.Unauthorized e) {
             model.addAttribute("error", true);
             return "login";
@@ -73,14 +73,14 @@ public class FrontendUserController {
         return "redirect:/index";
     }
 
-    @GetMapping({ "/", "/index" })
-    public String showIndex(Model model, HttpSession session) {
-        User user = (User) session.getAttribute("loggedInUser");
-        model.addAttribute("loggedInUser", user);
-        model.addAttribute("admin", user != null && "ADMIN".equals(user.getRole()));
-        // Load quizzes from quiz-service here
-        return "index";
-    }
+    // @GetMapping({ "/", "/index" })
+    // public String showIndex(Model model, HttpSession session) {
+    //     User user = (User) session.getAttribute("loggedInUser");
+    //     model.addAttribute("loggedInUser", user);
+    //     model.addAttribute("teacher", user != null && "TEACHER".equals(user.getRole()));
+    //     // Load quizzes from quiz-service here
+    //     return "login";
+    // }
 
     @GetMapping("/profile")
     public String profile(Model model, HttpSession session) {
