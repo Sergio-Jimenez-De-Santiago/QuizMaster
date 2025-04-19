@@ -11,7 +11,7 @@
 </head>
 <body>
 <header>
-    <a href="/index" class="headerBrand">QuizMaster</a>
+    <a href="/index" class="headerBrand" >QuizMaster</a>
     <nav>
         <div class="headerDiv">
             <ul>
@@ -23,6 +23,7 @@
                 <!-- Div visible when a user is logged in -->
                 <div th:if="${loggedInUser != null}" class="user-actions">
                     <li><a href="/profile">Profile</a></li>
+                    <li><a href="/courses">All courses</a></li>
                     <li><a href="/quizzes">Quizzes</a></li>
                     <li><a href="/logout">Log out</a></li>
                 </div>
@@ -30,22 +31,33 @@
         </div>
     </nav>
 </header>
-<main>
+
+<main class="container mt-4">
     <h2>Available Courses</h2>
 
     <div th:if="${error}">
-        <p th:text="${error}" style="color: red;"></p>
+        <p th:text="${error}" class="text-danger"></p>
     </div>
 
-    <ul th:if="${courses}" th:each="course : ${courses}">
-        <li>
-            <a th:href="@{/course/{id}(id=${course.id})}" th:text="${course.name}"></a> - 
-            <span th:text="${course.description}"></span>
-        </li>
-    </ul>
+    <div th:if="${courses != null and !courses.isEmpty()}">
+        <div class="row">
+            <div class="col-md-4 mb-4" th:each="course : ${courses}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <a th:href="@{/courses/{id}(id=${course.id})}" th:text="${course.name}"></a>
+                        </h5>
+                        <p class="card-text" th:text="${course.description}"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <!-- If no courses are found -->
-    <p th:if="${courses == null or courses.isEmpty()}">No courses available.</p>
+    <div th:if="${courses == null or courses.isEmpty()}" class="text-center mt-5">
+        <p>No courses available.</p>
+    </div>
 </main>
+
 </body>
 </html>

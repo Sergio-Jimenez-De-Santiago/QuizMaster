@@ -31,19 +31,16 @@ public class FrontendCourseController {
 
     @GetMapping({"/", "/index"})
     public String showIndex(Model model, HttpSession session) {
-        User user = (User) session.getAttribute("loggedInUser");
-    
-        if (user == null) {
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        if (loggedInUser == null) {
             return "redirect:/login";
         }
-    
-        model.addAttribute("loggedInUser", user);
-        model.addAttribute("teacher", "TEACHER".equals(user.getRole()));
-    
+        model.addAttribute("loggedInUser", loggedInUser);
+
         try {
-            if ("STUDENT".equals(user.getRole())) {
+            if ("STUDENT".equals(loggedInUser.getRole())) {
                 ResponseEntity<Enrolment[]> enrolmentResponse = restTemplate.getForEntity(
-                    enrolmentServiceUrl + "/enrolments/student/" + user.getId(), Enrolment[].class);
+                    enrolmentServiceUrl + "/enrolments/student/" + loggedInUser.getId(), Enrolment[].class);
                 List<Enrolment> enrolments = Arrays.asList(enrolmentResponse.getBody());
     
                 List<Course> courses = new ArrayList<>();
@@ -56,7 +53,7 @@ public class FrontendCourseController {
                 model.addAttribute("courses", courses);
             } else {
                 ResponseEntity<Course[]> response = restTemplate.getForEntity(
-                    courseServiceUrl + "/courses/teacher/" + user.getId(), Course[].class);
+                    courseServiceUrl + "/courses/teacher/" + loggedInUser.getId(), Course[].class);
                 model.addAttribute("courses", Arrays.asList(response.getBody()));
             }
         } catch (Exception e) {
@@ -73,10 +70,11 @@ public class FrontendCourseController {
         if (loggedInUser == null) {
             return "redirect:/login";
         }
+        model.addAttribute("loggedInUser", loggedInUser);
 
         try {
             ResponseEntity<Course[]> response = restTemplate.getForEntity(
-                courseServiceUrl + "/api/courses", Course[].class);
+                courseServiceUrl + "/courses", Course[].class);
             List<Course> courses = Arrays.asList(response.getBody());
             model.addAttribute("courses", courses);
         } catch (Exception e) {
@@ -110,7 +108,7 @@ public class FrontendCourseController {
         User user = (User) session.getAttribute("loggedInUser");
 
         if (user == null || !"TEACHER".equalsIgnoreCase(user.getRole())) {
-            return "redirect:/login";
+            return "redirect:/index";
         }
 
         model.addAttribute("course", new Course());
@@ -128,9 +126,9 @@ public class FrontendCourseController {
         }
 
         try {
-            course.setTeacherId(user.getId()); // assuming course has a teacherId field
-            restTemplate.postForEntity(courseServiceUrl + "/api/courses", course, Course.class);
-            return "redirect:/courses";
+            course.setTeacherId(user.getId());
+            restTemplate.postForEntity(courseServiceUrl + "/courses", course, Course.class);
+            return "redirect:/index";
         } catch (Exception e) {
             model.addAttribute("error", "Failed to create course.");
             return "create-course";

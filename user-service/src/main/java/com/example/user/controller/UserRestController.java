@@ -80,10 +80,4 @@ public class UserRestController {
             return ResponseEntity.notFound().build();
         }
     }
-
-    @GetMapping("/api/health")
-    public ResponseEntity<String> health() {
-        return ResponseEntity.ok("OK");
-    }
-
 }
