@@ -23,7 +23,6 @@ public class FrontendEnrolmentController {
     public String enrollInCourse(@PathVariable Long courseId, HttpSession session) {
         try {
             User student = (User) session.getAttribute("loggedInUser");
-
             if (student == null) {
                 return "redirect:/login";
             }
@@ -31,23 +30,13 @@ public class FrontendEnrolmentController {
             Enrolment enrolment = new Enrolment();
             enrolment.setCourseId(courseId);
             enrolment.setStudentId(student.getId());
+            restTemplate.postForEntity(enrolementServiceUrl + "/enrolments", enrolment, Enrolment.class);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<Enrolment> request = new HttpEntity<>(enrolment, headers);
-
-            ResponseEntity<Enrolment> response = restTemplate.postForEntity(
-                    enrolementServiceUrl + "/enrolments", request, Enrolment.class);
-
-            System.out.println("success" + response);
             return "redirect:/courses";
 
         } catch (Exception e) {
             e.printStackTrace();
-
             return "redirect:/courses/" + courseId + "?error=" + e.getMessage();
         }
     }
-
 }

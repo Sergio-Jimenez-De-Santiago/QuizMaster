@@ -86,20 +86,20 @@ public class FrontendCourseController {
 
     @GetMapping("/courses/{id}")
     public String getQuiz(@PathVariable Integer id, Model model, HttpSession session) {
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        if (loggedInUser == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("loggedInUser", loggedInUser);
+        model.addAttribute("STUDENT", loggedInUser != null && "STUDENT".equals(loggedInUser.getRole()));
+
         try {
             ResponseEntity<Course> response = restTemplate.getForEntity(
                 courseServiceUrl + "/courses/" + id, Course.class);
             model.addAttribute("course", response.getBody());
-            System.out.println("Got course with id: " + id);
-            System.out.println(response.getBody());
         } catch (Exception e) {
             model.addAttribute("error", "Could not load the course.");
         }
-        Object userObj = session.getAttribute("loggedInUser");
-        User user = (User) userObj;
-        model.addAttribute("STUDENT", user != null && "STUDENT".equals(user.getRole()));
-        System.out.println(user.getRole());
-        model.addAttribute("loggedInUser", user);
         return "course-details";
     }
 
