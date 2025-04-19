@@ -1,5 +1,5 @@
 package com.example.course.assembler;
-// package com.example.module.assembler;
+// package com.example.course.assembler;
 
 // import com.example.user.controller.UserRestController;
 // import com.example.user.dto.UserProfileDTO;

@@ -19,8 +19,8 @@ public class FrontendEnrolmentController {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @PostMapping("/enroll/{moduleId}")
-    public String enrollInModule(@PathVariable Long moduleId, HttpSession session) {
+    @PostMapping("/enroll/{courseId}")
+    public String enrollInCourse(@PathVariable Long courseId, HttpSession session) {
         try {
             User student = (User) session.getAttribute("loggedInUser");
 
@@ -29,7 +29,7 @@ public class FrontendEnrolmentController {
             }
 
             Enrolment enrolment = new Enrolment();
-            enrolment.setModuleId(moduleId);
+            enrolment.setCourseId(courseId);
             enrolment.setStudentId(student.getId());
 
             HttpHeaders headers = new HttpHeaders();
@@ -41,12 +41,12 @@ public class FrontendEnrolmentController {
                     enrolementServiceUrl + "/enrolments", request, Enrolment.class);
 
             System.out.println("success" + response);
-            return "redirect:/modules";
+            return "redirect:/courses";
 
         } catch (Exception e) {
             e.printStackTrace();
 
-            return "redirect:/modules/" + moduleId + "?error=" + e.getMessage();
+            return "redirect:/courses/" + courseId + "?error=" + e.getMessage();
         }
     }
 

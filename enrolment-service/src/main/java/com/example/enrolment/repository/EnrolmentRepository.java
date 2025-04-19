@@ -11,6 +11,6 @@ import com.example.enrolment.model.Enrolment;
 @Repository
 public interface EnrolmentRepository extends JpaRepository<Enrolment, Long> {
     List<Enrolment> findByStudentId(Long studentId);
-    List<Enrolment> findByModuleId(Long moduleId);
-    Optional<Enrolment> findByStudentIdAndModuleId(Long studentId, Long moduleId);
+    List<Enrolment> findByCourseId(Long courseId);
+    Optional<Enrolment> findByStudentIdAndCourseId(Long studentId, Long courseId);
 }

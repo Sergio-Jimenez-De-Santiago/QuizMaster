@@ -131,4 +131,20 @@ public class quizController {
 
     }
 
+    @GetMapping("/quizzes/byCourse/{courseId}")
+    public ResponseEntity<List<QuizDTO>> getQuizzesByCourse(@PathVariable Long courseId) {
+        List<Quiz> quizzes = quizService.findByCourseId(courseId);
+        List<QuizDTO> quizDTOs = quizzes.stream().map(quiz -> {
+            QuizDTO dto = new QuizDTO();
+            dto.setId(quiz.getId());
+            dto.setTitle(quiz.getTitle());
+            dto.setTimeLeft(quiz.getTimeLeft());
+            dto.setCourseId(quiz.getCourseId());
+            return dto;
+        }).toList();
+
+        return ResponseEntity.ok(quizDTOs);
+    }
+
+
 }

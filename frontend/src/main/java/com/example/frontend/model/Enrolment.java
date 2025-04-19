@@ -1,12 +1,10 @@
 package com.example.frontend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 public class Enrolment {
 
     private Long enrolmentId;
     private Long studentId;
-    private Long moduleId;
+    private Long courseId;
 
     // Getters and setters
 
@@ -26,12 +24,12 @@ public class Enrolment {
         this.studentId = studentId;
     }
 
-    public Long getModuleId() {
-        return moduleId;
+    public Long getCourseId() {
+        return courseId;
     }
 
-    public void setModuleId(Long moduleId) {
-        this.moduleId = moduleId;
+    public void setCourseId(Long courseId) {
+        this.courseId = courseId;
     }
 
     @Override
@@ -39,7 +37,7 @@ public class Enrolment {
         return "Enrolment{" +
                 "enrolmentId=" + enrolmentId +
                 ", studentId=" + studentId +
-                ", moduleId=" + moduleId +
+                ", courseId=" + courseId +
                 '}';
     }
 

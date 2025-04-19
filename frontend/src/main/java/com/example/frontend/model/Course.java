@@ -43,7 +43,7 @@ public class Course {
 
     @Override
     public String toString() {
-        return "Module{" +
+        return "Course{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +

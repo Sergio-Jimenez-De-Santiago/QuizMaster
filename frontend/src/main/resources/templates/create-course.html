@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Create Module</title>
+    <title>Create Course</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 </head>
 <body>
-    <!-- Header Section -->
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
             <a class="navbar-brand" href="/index">QuizMaster</a>
@@ -18,7 +17,7 @@
                         <a class="nav-link" href="/profile">Profile</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/modules">Modules</a>
+                        <a class="nav-link" href="/courses">Courses</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/logout">Log out</a>
@@ -28,22 +27,21 @@
         </nav>
     </header>
 
-    <!-- Main Content Section -->
     <div class="container mt-4">
-        <h2>Create a New Module</h2>
+        <h2>Create a New Course</h2>
 
         <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-        <form th:action="@{/modules/create}" th:object="${module}" method="post">
+        <form th:action="@{/courses/create}" th:object="${course}" method="post">
             <div class="form-group">
-                <label for="name">Module Name</label>
+                <label for="name">Course Name</label>
                 <input type="text" th:field="*{name}" class="form-control" id="name" required>
             </div>
             <div class="form-group">
                 <label for="description">Description</label>
                 <textarea th:field="*{description}" class="form-control" id="description" rows="3" required></textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Create Module</button>
+            <button type="submit" class="btn btn-primary">Create Course</button>
         </form>
     </div>
 

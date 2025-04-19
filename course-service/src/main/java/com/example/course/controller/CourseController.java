@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.course.dto.CourseWithQuizzesDTO;
 import com.example.course.model.Course;
 import com.example.course.service.CourseService;
 
@@ -14,29 +15,35 @@ import java.util.*;
 public class CourseController {
 
     @Autowired
-    private final CourseService moduleService;
+    private final CourseService courseService;
 
-    public CourseController(CourseService moduleService) {
-        this.moduleService = moduleService;
+    public CourseController(CourseService courseService) {
+        this.courseService = courseService;
     }
 
-    @PostMapping("/modules")
-    public ResponseEntity<Course> createModule(@RequestBody Course module) {
-        return new ResponseEntity<>(moduleService.createModule(module), HttpStatus.CREATED);
+    @PostMapping("/courses")
+    public ResponseEntity<Course> createCourse(@RequestBody Course course) {
+        return new ResponseEntity<>(courseService.createCourse(course), HttpStatus.CREATED);
     }
 
-    @GetMapping("/modules/{id}")
-    public ResponseEntity<Course> getModuleById(@PathVariable Long id) {
-        return ResponseEntity.ok(moduleService.getModuleById(id));
+    @GetMapping("/courses/{id}")
+    public ResponseEntity<Course> getCourseById(@PathVariable Long id) {
+        return ResponseEntity.ok(courseService.getCourseById(id));
     }
 
-    @GetMapping("/modules")
-    public List<Course> getAllModules() {
-        return moduleService.getAllModules();
+    @GetMapping("/courses")
+    public List<Course> getAllCourses() {
+        return courseService.getAllCourses();
     }
 
-    @GetMapping("/modules/teacher/{teacherId}")
-    public List<Course> getModulesByTeacherId(@PathVariable Long teacherId) {
-        return moduleService.getModulesByTeacherId(teacherId);
+    @GetMapping("/courses/teacher/{teacherId}")
+    public List<Course> getCoursesByTeacherId(@PathVariable Long teacherId) {
+        return courseService.getCoursesByTeacherId(teacherId);
     }
+
+    @GetMapping("/courses/{id}/with-quizzes")
+    public ResponseEntity<CourseWithQuizzesDTO> getCourseWithQuizzes(@PathVariable Long id) {
+        return ResponseEntity.ok(courseService.getCourseWithQuizzes(id));
+    }
+
 }

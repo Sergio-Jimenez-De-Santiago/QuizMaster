@@ -14,18 +14,17 @@ import org.springframework.web.client.RestTemplate;
 
 import com.example.frontend.model.User;
 import com.example.frontend.model.Course;
-import com.example.frontend.model.Quiz;
 
 @Controller
 public class FrontendCourseController {
 
     @Value("${course.service.url}")
-    private String moduleServiceUrl;
+    private String courseServiceUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @GetMapping("/modules")
-    public String viewModules(Model model, HttpSession session) {
+    @GetMapping("/courses")
+    public String viewCourses(Model model, HttpSession session) {
         Object loggedInUser = session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
             return "redirect:/login";
@@ -33,51 +32,51 @@ public class FrontendCourseController {
 
         try {
             ResponseEntity<Course[]> response = restTemplate.getForEntity(
-                    moduleServiceUrl + "/api/modules", Course[].class);
-            List<Course> modules = Arrays.asList(response.getBody());
-            model.addAttribute("modules", modules);
+                courseServiceUrl + "/api/courses", Course[].class);
+            List<Course> courses = Arrays.asList(response.getBody());
+            model.addAttribute("courses", courses);
         } catch (Exception e) {
-            model.addAttribute("error", "Unable to fetch modules.");
+            model.addAttribute("error", "Unable to fetch courses.");
         }
 
-        return "all-modules";
+        return "all-courses";
     }
 
-    @GetMapping("/modules/{id}")
+    @GetMapping("/courses/{id}")
     public String getQuiz(@PathVariable Integer id, Model model, HttpSession session) {
         try {
             ResponseEntity<Course> response = restTemplate.getForEntity(
-                    moduleServiceUrl + "/modules/" + id, Course.class);
-            model.addAttribute("module", response.getBody());
-            System.out.println("Got module with id: " + id);
+                courseServiceUrl + "/courses/" + id, Course.class);
+            model.addAttribute("course", response.getBody());
+            System.out.println("Got course with id: " + id);
             System.out.println(response.getBody());
         } catch (Exception e) {
-            model.addAttribute("error", "Could not load the module.");
+            model.addAttribute("error", "Could not load the course.");
         }
         Object userObj = session.getAttribute("loggedInUser");
         User user = (User) userObj;
         model.addAttribute("USER", user != null && "USER".equals(user.getRole()));
         System.out.println(user.getRole());
         model.addAttribute("loggedInUser", user);
-        return "module-details";
+        return "course-details";
     }
 
-    @GetMapping("/create-module")
-    public String showCreateModuleForm(Model model, HttpSession session) {
+    @GetMapping("/create-course")
+    public String showCreateCourseForm(Model model, HttpSession session) {
         User user = (User) session.getAttribute("loggedInUser");
 
         if (user == null || !"ADMIN".equalsIgnoreCase(user.getRole())) {
             return "redirect:/login";
         }
 
-        model.addAttribute("module", new Course());
+        model.addAttribute("course", new Course());
         model.addAttribute("loggedInUser", user);
 
-        return "create-module";
+        return "create-course";
     }
 
-    @PostMapping("/modules/create")
-    public String createModule(@ModelAttribute Course module, Model model, HttpSession session) {
+    @PostMapping("/courses/create")
+    public String createCourse(@ModelAttribute Course course, Model model, HttpSession session) {
         User user = (User) session.getAttribute("loggedInUser");
 
         if (user == null || !"TEACHER".equalsIgnoreCase(user.getRole())) {
@@ -85,12 +84,12 @@ public class FrontendCourseController {
         }
 
         try {
-            module.setTeacherId(user.getId()); // assuming module has a teacherId field
-            restTemplate.postForEntity(moduleServiceUrl + "/api/modules", module, Course.class);
-            return "redirect:/modules";
+            course.setTeacherId(user.getId()); // assuming course has a teacherId field
+            restTemplate.postForEntity(courseServiceUrl + "/api/courses", course, Course.class);
+            return "redirect:/courses";
         } catch (Exception e) {
-            model.addAttribute("error", "Failed to create module.");
-            return "create-module";
+            model.addAttribute("error", "Failed to create course.");
+            return "create-course";
         }
     }
 

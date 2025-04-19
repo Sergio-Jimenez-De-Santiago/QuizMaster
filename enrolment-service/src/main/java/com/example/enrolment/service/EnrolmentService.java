@@ -19,10 +19,10 @@ public class EnrolmentService {
 
     public Enrolment createEnrolment(@Valid Enrolment enrolment) {
         Optional<Enrolment> existing = enrolmentRepository
-                .findByStudentIdAndModuleId(enrolment.getStudentId(), enrolment.getModuleId());
+                .findByStudentIdAndCourseId(enrolment.getStudentId(), enrolment.getCourseId());
 
         if (existing.isPresent()) {
-            throw new IllegalArgumentException("Student already enrolled in this module");
+            throw new IllegalArgumentException("Student already enrolled in this course");
         }
 
         return enrolmentRepository.save(enrolment);
@@ -41,8 +41,8 @@ public class EnrolmentService {
         return enrolmentRepository.findByStudentId(studentId);
     }
 
-    public List<Enrolment> getEnrolmentsByModuleId(Long moduleId) {
-        return enrolmentRepository.findByModuleId(moduleId);
+    public List<Enrolment> getEnrolmentsByCourseId(Long courseId) {
+        return enrolmentRepository.findByCourseId(courseId);
     }
 }
 

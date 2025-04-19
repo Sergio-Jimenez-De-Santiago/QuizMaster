@@ -1,22 +1,13 @@
-package com.example.course.model;
-
-import jakarta.persistence.*;
+package com.example.course.dto;
 
 import java.util.List;
 
-@Entity
-@Table(name = "courses")
-public class Course {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+public class CourseWithQuizzesDTO {
     private Long id;
-
     private String name;
-
     private String description;
-
     private Long teacherId;
+    private List<QuizDTO> quizzes;
 
     public Long getId() {
         return id;
@@ -50,13 +41,11 @@ public class Course {
         this.teacherId = teacherId;
     }
 
-    @Override
-    public String toString() {
-        return "Course{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", teacherId=" + teacherId +
-                '}';
+    public List<QuizDTO> getQuizzes() {
+        return quizzes;
+    }
+
+    public void setQuizzes(List<QuizDTO> quizzes) {
+        this.quizzes = quizzes;
     }
 }

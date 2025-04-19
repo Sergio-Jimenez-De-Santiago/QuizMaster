@@ -43,8 +43,8 @@ public class EnrolmentController {
         return enrolmentService.getEnrolmentsByStudentId(studentId);
     }
 
-    @GetMapping("/enrolments/module/{moduleId}")
-    public List<Enrolment> getEnrolmentsByModuleId(@PathVariable Long moduleId) {
-        return enrolmentService.getEnrolmentsByModuleId(moduleId);
+    @GetMapping("/enrolments/course/{courseId}")
+    public List<Enrolment> getEnrolmentsByCourseId(@PathVariable Long courseId) {
+        return enrolmentService.getEnrolmentsByCourseId(courseId);
     }
 }

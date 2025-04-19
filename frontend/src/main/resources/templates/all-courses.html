@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>QuizMaster - All modules</title>
+    <title>QuizMaster - All courses</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
@@ -31,21 +31,21 @@
     </nav>
 </header>
 <main>
-    <h2>Available Modules</h2>
+    <h2>Available Courses</h2>
 
     <div th:if="${error}">
         <p th:text="${error}" style="color: red;"></p>
     </div>
 
-    <ul th:if="${modules}" th:each="module : ${modules}">
+    <ul th:if="${courses}" th:each="course : ${courses}">
         <li>
-            <a th:href="@{/module/{id}(id=${module.id})}" th:text="${module.name}"></a> - 
-            <span th:text="${module.description}"></span>
+            <a th:href="@{/course/{id}(id=${course.id})}" th:text="${course.name}"></a> - 
+            <span th:text="${course.description}"></span>
         </li>
     </ul>
 
-    <!-- If no modules are found -->
-    <p th:if="${modules == null or modules.isEmpty()}">No modules available.</p>
+    <!-- If no courses are found -->
+    <p th:if="${courses == null or courses.isEmpty()}">No courses available.</p>
 </main>
 </body>
 </html>

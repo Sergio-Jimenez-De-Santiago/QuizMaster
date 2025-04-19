@@ -1,18 +1,37 @@
 package com.example.quiz.dto;
 
-import java.time.LocalDate;
 import java.util.Map;
 
 public class QuizDTO {
+
     private long id;
     private String title;
     private String timeLeft;
     private Map<Integer, String> questions;
     private Map<Integer, String> teacherAnswers;
     private Map<Integer, String> studentAnswers;
+    private long courseId;
 
-    // Getters and setters
+    // No-args constructor
+    public QuizDTO() {
+    }
 
+    // All-args constructor (optional)
+    public QuizDTO(long id, String title, String timeLeft,
+            Map<Integer, String> questions,
+            Map<Integer, String> teacherAnswers,
+            Map<Integer, String> studentAnswers,
+            long courseId) {
+        this.id = id;
+        this.title = title;
+        this.timeLeft = timeLeft;
+        this.questions = questions;
+        this.teacherAnswers = teacherAnswers;
+        this.studentAnswers = studentAnswers;
+        this.courseId = courseId;
+    }
+
+    // Getters and Setters
     public long getId() {
         return id;
     }
@@ -37,7 +56,6 @@ public class QuizDTO {
         this.timeLeft = timeLeft;
     }
 
-
     public Map<Integer, String> getQuestions() {
         return questions;
     }
@@ -53,11 +71,33 @@ public class QuizDTO {
     public void setTeacherAnswers(Map<Integer, String> teacherAnswers) {
         this.teacherAnswers = teacherAnswers;
     }
+
     public Map<Integer, String> getStudentAnswers() {
         return studentAnswers;
     }
 
     public void setStudentAnswers(Map<Integer, String> studentAnswers) {
         this.studentAnswers = studentAnswers;
+    }
+
+    public long getCourseId() {
+        return courseId;
+    }
+
+    public void setCourseId(long courseId) {
+        this.courseId = courseId;
+    }
+
+    @Override
+    public String toString() {
+        return "QuizDTO{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", timeLeft='" + timeLeft + '\'' +
+                ", questions=" + questions +
+                ", teacherAnswers=" + teacherAnswers +
+                ", studentAnswers=" + studentAnswers +
+                ", courseId=" + courseId +
+                '}';
     }
 }

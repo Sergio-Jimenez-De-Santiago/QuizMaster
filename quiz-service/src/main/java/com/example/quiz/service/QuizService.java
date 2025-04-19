@@ -26,12 +26,14 @@ public class QuizService {
     }
 
     public Quiz createQuiz(@Valid Quiz quiz) {
-        if (quizRepository.findById(quiz.getId()).isPresent()) {
-            throw new IllegalArgumentException("Quiz already exists");
+        Optional<Quiz> existing = quizRepository.findByTitleAndCourseId(quiz.getTitle(), quiz.getCourseId());
+        if (existing.isPresent()) {
+            throw new IllegalArgumentException("A quiz with this title already exists for this course.");
         }
-        System.out.println("quiz saved");
+    
         return quizRepository.save(quiz);
     }
+    
 
     public List<Quiz> getAllQuizzes() {
         return quizRepository.findAll();
@@ -65,4 +67,7 @@ public class QuizService {
         return quizSubmissionRepository.findAllByStudentId(studentId);
     }
 
+    public List<Quiz> findByCourseId(Long courseId) {
+        return quizRepository.findByCourseId(courseId);
+    }
 }

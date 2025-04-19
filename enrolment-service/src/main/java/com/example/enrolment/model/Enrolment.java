@@ -13,8 +13,8 @@ public class Enrolment {
     @NotNull(message = "StudentId is mandatory")
     private Long studentId;
 
-    @NotNull(message = "ModuleId is mandatory")
-    private Long moduleId;
+    @NotNull(message = "CourseId is mandatory")
+    private Long courseId;
 
     public Long getEnrolmentId() {
         return enrolmentId;
@@ -32,12 +32,12 @@ public class Enrolment {
         this.studentId = studentId;
     }
 
-    public Long getModuleId() {
-        return moduleId;
+    public Long getCourseId() {
+        return courseId;
     }
 
-    public void setModuleId(Long moduleId) {
-        this.moduleId = moduleId;
+    public void setCourseId(Long courseId) {
+        this.courseId = courseId;
     }
 
     @Override
@@ -45,7 +45,7 @@ public class Enrolment {
         return "Enrolment{" +
                 "enrolmentId=" + enrolmentId +
                 ", studentId=" + studentId +
-                ", moduleId=" + moduleId +
+                ", courseId=" + courseId +
                 '}';
     }
 }
