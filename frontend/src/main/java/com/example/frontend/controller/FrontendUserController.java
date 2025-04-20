@@ -106,7 +106,7 @@ public class FrontendUserController {
         if (user == null) {
             return "redirect:/login";
         }
-        model.addAttribute("user", user);
+        model.addAttribute("loggedInUser", user);
         return "profile";
     }
 
