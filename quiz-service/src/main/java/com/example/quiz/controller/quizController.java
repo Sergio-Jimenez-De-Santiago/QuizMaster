@@ -84,17 +84,17 @@ public class quizController {
         return ResponseEntity.noContent().build(); // 204 No Content
     }
 
-    @PostMapping(value = "/quizzes", consumes = "application/json")
-    public ResponseEntity<Quiz> createQuiz(
-            @RequestBody QuizDTO quizDTO) {
+    @PostMapping(value = "/courses/{courseId}/quizzes", consumes = "application/json")
+    public ResponseEntity<Quiz> createQuiz(@PathVariable Long courseId, @RequestBody QuizDTO quizDTO) {
         Quiz quiz = new Quiz();
         quiz.setTitle(quizDTO.getTitle());
         quiz.setQuestions(quizDTO.getQuestions());
         quiz.setTimeLeft(quizDTO.getTimeLeft());
         quiz.setTeacherAnswers(quizDTO.getTeacherAnswers());
+        quiz.setCourseId(courseId);
         quizService.createQuiz(quiz);
-        String url = "http://" + getHost() + "/quizzes/"
-                + quiz.getTitle();
+        
+        String url = "http://" + getHost() + "/quizzes/" + quiz.getTitle();
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .header("Location", url)
@@ -145,6 +145,4 @@ public class quizController {
 
         return ResponseEntity.ok(quizDTOs);
     }
-
-
 }

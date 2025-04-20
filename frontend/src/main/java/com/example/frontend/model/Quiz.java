@@ -1,10 +1,8 @@
 package com.example.frontend.model;
 
-import org.springframework.format.annotation.DateTimeFormat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.time.LocalDate;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -18,8 +16,8 @@ public class Quiz {
     private transient String questionsText;
     @JsonIgnore
     private transient String teacherAnswersText;
+    private long courseId;
 
-    // Getters and setters
     public String getQuestionsText() {
         return questionsText;
     }
@@ -42,6 +40,14 @@ public class Quiz {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public long getCourseId() {
+        return courseId;
+    }
+
+    public void setCourseId(long courseId) {
+        this.courseId = courseId;
     }
 
     public String getTitle() {

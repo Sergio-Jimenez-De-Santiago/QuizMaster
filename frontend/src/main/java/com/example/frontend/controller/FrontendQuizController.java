@@ -120,23 +120,18 @@ public class FrontendQuizController {
 
         // Show the form to create a quiz (only for TEACHER users)
         @GetMapping("/createquiz")
-        public String createQuizForm(Model model, HttpSession session) {
-                Object userObj = session.getAttribute("loggedInUser");
-
-                if (userObj == null) {
+        public String createQuizForm(@RequestParam("courseId") Long courseId, Model model, HttpSession session) {
+                // Get loggedInUser through the HttpSession
+                User loggedInUser = (User) session.getAttribute("loggedInUser");
+                if (loggedInUser == null || !"TEACHER".equalsIgnoreCase(loggedInUser.getRole())) {
                         return "redirect:/login";
                 }
 
-                User user = (User) userObj;
+                Quiz quiz = new Quiz();
+                quiz.setCourseId(courseId);
 
-                if (!"TEACHER".equals(user.getRole())) {
-                        model.addAttribute("error", "Only teachers can create quizzes.");
-                        model.addAttribute("loggedInUser", user);
-                        return "create-quiz"; // still return view, but with warning
-                }
-
-                model.addAttribute("quiz", new Quiz());
-                model.addAttribute("loggedInUser", user);
+                model.addAttribute("quiz", quiz);
+                model.addAttribute("loggedInUser", loggedInUser);
                 return "create-quiz";
         }
 
@@ -153,13 +148,12 @@ public class FrontendQuizController {
         // Handle submission of the create quiz form
         @PostMapping("/createquiz")
         public String createQuiz(@ModelAttribute Quiz quiz, Model model, HttpSession session) {
-                // Only allow TEACHER users to create a quiz
-                User user = (User) session.getAttribute("loggedInUser");
-
-                if (user == null || !"TEACHER".equals(user.getRole())) {
-                        model.addAttribute("error", "You do not have permission to create quizzes.");
-                        return "create-quiz";
+                // Get loggedInUser through the HttpSession
+                User loggedInUser = (User) session.getAttribute("loggedInUser");
+                if (loggedInUser == null || !"TEACHER".equalsIgnoreCase(loggedInUser.getRole())) {
+                        return "redirect:/login";
                 }
+
                 try {
                         Map<Integer, String> questions = new HashMap<>();
                         Map<Integer, String> answers = new HashMap<>();
@@ -177,6 +171,7 @@ public class FrontendQuizController {
 
                         quiz.setQuestions(questions);
                         quiz.setTeacherAnswers(answers);
+
                         // Prepare the request entity
                         HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -184,12 +179,9 @@ public class FrontendQuizController {
                         HttpEntity<QuizDTO> request = new HttpEntity<>(quizDTO, headers);
 
                         // The quiz service expects JSON payload for the quiz creation
-                        ResponseEntity<Quiz> response = restTemplate.postForEntity(
-                                        quizServiceUrl + "/quizzes", request, Quiz.class);
+                        restTemplate.postForEntity(quizServiceUrl + "/courses/" + quiz.getCourseId() + "/quizzes", request, Quiz.class);
 
-                        // If successfully created, redirect to quiz list or details page
-                        System.out.println("created" + response);
-                        return "redirect:/quizzes";
+                        return "redirect:/courses/" + quiz.getCourseId();
                 } catch (HttpClientErrorException e) {
                         model.addAttribute("error", "Error creating quiz: " + e.getMessage());
                         return "create-quiz";

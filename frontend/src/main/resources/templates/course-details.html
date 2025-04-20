@@ -60,7 +60,6 @@
                 <a href="/index" class="btn btn-secondary">Back to Courses</a>
 
                 <div th:if="${loggedInUser.role == 'STUDENT'}">
-
                     <div th:if="${alreadyEnrolled}">
                         <p class="text-success mt-3">You are already enrolled in this course!</p>
                     </div>
@@ -71,6 +70,31 @@
                     </div>
                 </div>
             </div>
+
+            <div th:if="${alreadyEnrolled}" class="mt-4">
+                <hr>
+                <h4>Quizzes</h4>
+
+                <div th:if="${quizzes != null and !quizzes.isEmpty()}">
+                    <ul class="list-group">
+                        <li class="list-group-item" th:each="quiz : ${quizzes}">
+                            <span th:text="${quiz.title}"></span>
+                            <span class="ml-2 text-muted" th:text="'(' + ${quiz.timeLeft} + ' min)'"></span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div th:if="${quizzes == null or quizzes.isEmpty()}">
+                    <p>No quizzes yet for this course</p>
+                </div>
+
+                <p th:text="'Current role: ' + ${loggedInUser.role}"></p>
+
+                <div th:if="${!STUDENT}" class="mt-3">
+                    <a th:href="@{/create-quiz(courseId=${course.id})}" class="btn btn-success">Create New Quiz</a>
+                </div>
+            </div>
+
         </div>
     </div>
 </main>

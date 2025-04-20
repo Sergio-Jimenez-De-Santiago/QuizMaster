@@ -15,7 +15,7 @@
 </head>
 <body>
 <header>
-    <a href="/index" class="headerBrand">QuizMaster</a>
+    <a href="/index" class="headerBrand" >QuizMaster</a>
     <nav>
         <div class="headerDiv">
             <ul>
@@ -27,6 +27,7 @@
                 <!-- Div visible when a user is logged in -->
                 <div th:if="${loggedInUser != null}" class="user-actions">
                     <li><a href="/profile">Profile</a></li>
+                    <li><a href="/courses">All courses</a></li>
                     <li><a href="/quizzes">Quizzes</a></li>
                     <li><a href="/logout">Log out</a></li>
                 </div>
@@ -34,6 +35,7 @@
         </div>
     </nav>
 </header>
+
 <main>
     <div class="container my-5">
         <h2 class="mb-5">Create Quiz</h2>
@@ -45,6 +47,7 @@
         <!-- Form visible only if the logged in user is TEACHER -->
         <div>
             <form action="#" th:action="@{/createquiz}" th:object="${quiz}" method="post">
+                <input type="hidden" th:field="*{courseId}" />
                 <!-- Quiz Title -->
                 <div class="form-group">
                     <label for="title" class="col-form-label">Quiz Title</label>

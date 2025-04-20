@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.frontend.model.User;
+import com.example.frontend.dto.QuizDTO;
 import com.example.frontend.model.Course;
 import com.example.frontend.model.Enrolment;
 
@@ -25,9 +26,11 @@ public class FrontendCourseController {
 
     @Value("${enrolment.service.url}")
     private String enrolmentServiceUrl;
+    
+    @Value("${quiz.service.url}")
+    private String quizServiceUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
-
 
     @GetMapping({"/", "/index"})
     public String showIndex(Model model, HttpSession session) {
@@ -83,12 +86,6 @@ public class FrontendCourseController {
 
         return "all-courses";
     }
-    
-
-
-
-
-
 
     @GetMapping("/courses/{id}")
     public String getCourseDetails(@PathVariable Long id, Model model, HttpSession session) {
@@ -99,7 +96,6 @@ public class FrontendCourseController {
         }
         model.addAttribute("loggedInUser", loggedInUser);
         model.addAttribute("STUDENT", loggedInUser != null && "STUDENT".equals(loggedInUser.getRole()));
-
 
         // Get course through course service
         try {
@@ -120,11 +116,21 @@ public class FrontendCourseController {
 
                 alreadyEnrolled = enrolments.stream().anyMatch(e -> e.getCourseId().equals(Long.valueOf(id)));
             } catch (Exception e) {
-                e.printStackTrace();
+                model.addAttribute("error", "Could not find enrollments.");
             }
         }
-        
         model.addAttribute("alreadyEnrolled", alreadyEnrolled);
+
+        // Get the quizzes that are part of a course through quiz service
+        try {
+            ResponseEntity<QuizDTO[]> response = restTemplate.getForEntity(
+                quizServiceUrl + "/quizzes/byCourse/" + id, QuizDTO[].class);
+            List<QuizDTO> quizzes = Arrays.asList(response.getBody());
+            model.addAttribute("quizzes", quizzes);
+        } catch (Exception e) {
+            model.addAttribute("error", "Could not load quizzes.");
+        }
+
         return "course-details";
     }
 
