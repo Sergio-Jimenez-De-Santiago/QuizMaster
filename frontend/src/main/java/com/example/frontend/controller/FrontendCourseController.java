@@ -83,9 +83,16 @@ public class FrontendCourseController {
 
         return "all-courses";
     }
+    
+
+
+
+
+
 
     @GetMapping("/courses/{id}")
-    public String getQuiz(@PathVariable Integer id, Model model, HttpSession session) {
+    public String getCourseDetails(@PathVariable Long id, Model model, HttpSession session) {
+        // Get loggedInUser through the HttpSession
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
             return "redirect:/login";
@@ -93,13 +100,31 @@ public class FrontendCourseController {
         model.addAttribute("loggedInUser", loggedInUser);
         model.addAttribute("STUDENT", loggedInUser != null && "STUDENT".equals(loggedInUser.getRole()));
 
+
+        // Get course through course service
         try {
             ResponseEntity<Course> response = restTemplate.getForEntity(
-                courseServiceUrl + "/courses/" + id, Course.class);
+                    courseServiceUrl + "/courses/" + id, Course.class);
             model.addAttribute("course", response.getBody());
         } catch (Exception e) {
             model.addAttribute("error", "Could not load the course.");
         }
+
+        // Check if student is already enrolled
+        boolean alreadyEnrolled = false;
+        if ("STUDENT".equalsIgnoreCase(loggedInUser.getRole())) {
+            try {
+                ResponseEntity<Enrolment[]> response = restTemplate.getForEntity(
+                        enrolmentServiceUrl + "/enrolments/student/" + loggedInUser.getId(), Enrolment[].class);
+                List<Enrolment> enrolments = Arrays.asList(response.getBody());
+
+                alreadyEnrolled = enrolments.stream().anyMatch(e -> e.getCourseId().equals(Long.valueOf(id)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        
+        model.addAttribute("alreadyEnrolled", alreadyEnrolled);
         return "course-details";
     }
 

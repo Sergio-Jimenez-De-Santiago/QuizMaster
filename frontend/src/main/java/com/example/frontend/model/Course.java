@@ -7,8 +7,6 @@ public class Course {
     private String description;
     private Long teacherId;
 
-    // Getters and setters
-
     public Long getId() {
         return id;
     }

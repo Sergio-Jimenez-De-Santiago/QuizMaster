@@ -58,17 +58,19 @@
 
             <div class="mt-3">
                 <a href="/courses" class="btn btn-secondary">Back to Courses</a>
+
                 <div th:if="${loggedInUser.role == 'STUDENT'}">
-                    <form th:action="@{/enroll/{courseId}(courseId=${course.id})}" method="post">
-                        <input type="submit" value="Enroll in this Course" class="btn btn-primary">
-                    </form>
+
+                    <div th:if="${alreadyEnrolled}">
+                        <p class="text-success mt-3">You are already enrolled in this course!</p>
+                    </div>
+                    <div th:unless="${alreadyEnrolled}">
+                        <form th:action="@{/enroll/{courseId}(courseId=${course.id})}" method="post">
+                            <input type="submit" value="Enroll in this Course" class="btn btn-primary">
+                        </form>
+                    </div>
                 </div>
             </div>
-
-            <!--
-                THIS HAS TO BE CHANGED TO SAY "ALREADY ENROLED" NEXT TO A COURSE IF A STUDENT IS 
-                ALREADY ENROLLED AND THEY SHOULD NOT BE ABLE TO CLICK THE ENROLL LINK
-            -->
         </div>
     </div>
 </main>
