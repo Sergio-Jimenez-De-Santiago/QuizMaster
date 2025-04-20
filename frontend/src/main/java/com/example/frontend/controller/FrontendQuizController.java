@@ -109,18 +109,38 @@ public class FrontendQuizController {
         }
 
         @DeleteMapping("/quizzes/{id}")
-        public String deleteQuiz(@PathVariable Integer id, Model model) {
+        public String deleteQuiz(@PathVariable Integer id, Model model, HttpSession session) {
                 try {
-                        restTemplate.delete(quizServiceUrl + "/quizzes/" + id);
+                        
+                        ResponseEntity<Quiz> quizResponse = restTemplate.getForEntity(
+                                        quizServiceUrl + "/quizzes/" + id, Quiz.class);
+                        Quiz quiz = quizResponse.getBody();
+
+                        if (quiz == null) {
+                                model.addAttribute("error", "Quiz not found.");
+                                return "redirect:/quizzes"; 
+                        }
+
+                        long courseId = quiz.getCourseId();
+
+                        try {
+                                restTemplate.delete(quizServiceUrl + "/quizzes/" + id);
+                        } catch (HttpClientErrorException.NotFound e) {
+                                model.addAttribute("error", "Quiz already deleted.");
+                        }
+
+                        return "redirect:/courses/" + courseId;
+
                 } catch (Exception e) {
-                        model.addAttribute("error", "Could not delete the quiz.");
+                        e.printStackTrace();
+                        model.addAttribute("error", "Something went wrong trying to delete the quiz.");
+                        return "redirect:/quizzes";
                 }
-                return "redirect:/quizzes";
         }
 
         // Show the form to create a quiz (only for TEACHER users)
-        @GetMapping("/createquiz")
-        public String createQuizForm(@RequestParam("courseId") Long courseId, Model model, HttpSession session) {
+        @GetMapping("/courses/{courseId}/create-quiz")
+        public String createQuizForm(@PathVariable("courseId") Long courseId, Model model, HttpSession session) {
                 // Get loggedInUser through the HttpSession
                 User loggedInUser = (User) session.getAttribute("loggedInUser");
                 if (loggedInUser == null || !"TEACHER".equalsIgnoreCase(loggedInUser.getRole())) {
@@ -146,7 +166,7 @@ public class FrontendQuizController {
         }
 
         // Handle submission of the create quiz form
-        @PostMapping("/createquiz")
+        @PostMapping("/courses/{courseId}/create-quiz")
         public String createQuiz(@ModelAttribute Quiz quiz, Model model, HttpSession session) {
                 // Get loggedInUser through the HttpSession
                 User loggedInUser = (User) session.getAttribute("loggedInUser");
@@ -179,7 +199,8 @@ public class FrontendQuizController {
                         HttpEntity<QuizDTO> request = new HttpEntity<>(quizDTO, headers);
 
                         // The quiz service expects JSON payload for the quiz creation
-                        restTemplate.postForEntity(quizServiceUrl + "/courses/" + quiz.getCourseId() + "/quizzes", request, Quiz.class);
+                        restTemplate.postForEntity(quizServiceUrl + "/courses/" + quiz.getCourseId() + "/quizzes",
+                                        request, Quiz.class);
 
                         return "redirect:/courses/" + quiz.getCourseId();
                 } catch (HttpClientErrorException e) {
@@ -234,8 +255,11 @@ public class FrontendQuizController {
                         System.out.println("Received submission DTO: " + submission);
 
                         model.addAttribute("message", "Quiz submitted successfully!");
-
-                        return "redirect:/quizzes";
+                        ResponseEntity<Quiz> quizResponse = restTemplate.getForEntity(
+                                        quizServiceUrl + "/quizzes/" + id, Quiz.class);
+                        Quiz quiz = quizResponse.getBody();
+                        long courseId = quiz.getCourseId();
+                        return "redirect:/courses/" + courseId;
                 } catch (Exception e) {
                         model.addAttribute("error", "Error submitting quiz: " + e.getMessage());
                         return "redirect:/quizzes";

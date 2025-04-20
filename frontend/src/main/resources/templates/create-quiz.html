@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" 
         integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
     <!-- Your custom stylesheet -->
-    <link th:href="@{styles/header.css}" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/header.css">
 </head>
 <body>
 <header>
@@ -46,7 +46,7 @@
 
         <!-- Form visible only if the logged in user is TEACHER -->
         <div>
-            <form action="#" th:action="@{/createquiz}" th:object="${quiz}" method="post">
+            <form action="#" th:action="@{/courses/{courseId}/create-quiz}" th:object="${quiz}" method="post">
                 <input type="hidden" th:field="*{courseId}" />
                 <!-- Quiz Title -->
                 <div class="form-group">

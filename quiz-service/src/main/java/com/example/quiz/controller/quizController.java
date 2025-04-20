@@ -75,13 +75,15 @@ public class quizController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(quiz);
     }
+
     @DeleteMapping("/quizzes/{id}")
     public ResponseEntity<Void> deleteQuiz(@PathVariable int id) {
-        quizService.deleteQuiz(id);
         if (quizService.findById(id) == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.noContent().build(); // 204 No Content
+
+        quizService.deleteQuiz(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping(value = "/courses/{courseId}/quizzes", consumes = "application/json")
@@ -93,7 +95,7 @@ public class quizController {
         quiz.setTeacherAnswers(quizDTO.getTeacherAnswers());
         quiz.setCourseId(courseId);
         quizService.createQuiz(quiz);
-        
+
         String url = "http://" + getHost() + "/quizzes/" + quiz.getTitle();
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -107,7 +109,7 @@ public class quizController {
         Optional<QuizSubmission> existingSubmission = quizService.findSubmission(studentId, id);
 
         if (existingSubmission.isPresent()) {
-            return ResponseEntity.ok(existingSubmission); 
+            return ResponseEntity.ok(existingSubmission);
         }
 
         Quiz quiz = quizService.findById(id);

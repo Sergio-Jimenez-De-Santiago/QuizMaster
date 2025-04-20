@@ -71,15 +71,14 @@
                 </div>
             </div>
 
-            <div th:if="${alreadyEnrolled}" class="mt-4">
+            <div th:if="${alreadyEnrolled or !STUDENT}" class="mt-4">
                 <hr>
                 <h4>Quizzes</h4>
 
                 <div th:if="${quizzes != null and !quizzes.isEmpty()}">
-                    <ul class="list-group">
+                    <ul class="list-group" th:if="${quizzes != null}">
                         <li class="list-group-item" th:each="quiz : ${quizzes}">
-                            <span th:text="${quiz.title}"></span>
-                            <span class="ml-2 text-muted" th:text="'(' + ${quiz.timeLeft} + ' min)'"></span>
+                            <a th:href="@{/quizzes/{id}(id=${quiz.id})}" th:text="${quiz.title}"></a>
                         </li>
                     </ul>
                 </div>
@@ -87,13 +86,11 @@
                 <div th:if="${quizzes == null or quizzes.isEmpty()}">
                     <p>No quizzes yet for this course</p>
                 </div>
-
-                <p th:text="'Current role: ' + ${loggedInUser.role}"></p>
-
                 <div th:if="${!STUDENT}" class="mt-3">
-                    <a th:href="@{/create-quiz(courseId=${course.id})}" class="btn btn-success">Create New Quiz</a>
+                    <a th:href="@{/courses/{courseId}/create-quiz(courseId=${course.id})}" class="btn btn-success">Create New Quiz</a>
                 </div>
             </div>
+           
 
         </div>
     </div>

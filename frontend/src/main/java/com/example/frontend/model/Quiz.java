@@ -92,6 +92,7 @@ public class Quiz {
                 ", timeLeft=" + timeLeft +
                 ", questions=" + questions +
                 ", teacherAnswers=" + teacherAnswers +
+                ", courseId=" + courseId +
                 '}';
     }
 
