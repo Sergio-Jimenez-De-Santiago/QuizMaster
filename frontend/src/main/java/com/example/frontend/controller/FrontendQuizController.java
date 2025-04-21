@@ -280,12 +280,5 @@ public class FrontendQuizController {
                 }
         }
 
-        @GetMapping("/quiz-list")
-        public String showQuizList(Model model, HttpSession session) {
-                User user = (User) session.getAttribute("loggedInUser");
-                model.addAttribute("loggedInUser", user);
-                model.addAttribute("isStudent", user != null && user.getRole() == UserRole.STUDENT);
-                return "quiz-list";
-        }
 
 }
