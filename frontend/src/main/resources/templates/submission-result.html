@@ -24,13 +24,15 @@
     <nav>
         <div class="headerDiv">
             <ul>
+                <!-- Div visible when no user is logged in -->
                 <div th:if="${loggedInUser == null}" class="user-actions">
                     <li><a href="/login">Log in</a></li>
                     <li><a href="/signup">Sign up</a></li>
                 </div>
+                <!-- Div visible when a user is logged in -->
                 <div th:if="${loggedInUser != null}" class="user-actions">
                     <li><a href="/profile">Profile</a></li>
-                    <li><a href="/quizzes">Quizzes</a></li>
+                    <li><a href="/courses">All courses</a></li>
                     <li><a href="/logout">Log out</a></li>
                 </div>
             </ul>
