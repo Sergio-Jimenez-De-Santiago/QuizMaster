@@ -38,16 +38,6 @@ public class QuizController {
         this.assembler = assembler;
     }
 
-    private String getHost() {
-        try {
-            InetAddress host = InetAddress.getLocalHost();
-            return "%s:%d".formatted(host.getHostAddress(), serverPort);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            return "";
-        }
-    }
-
     private QuizDTO toDTO(Quiz quiz) {
         QuizDTO dto = new QuizDTO();
         dto.setId(quiz.getId());
