@@ -5,8 +5,10 @@ import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.frontend.model.User;
+import com.example.frontend.response.QuizCollectionModel;
 import com.example.frontend.security.UserRole;
 import com.example.frontend.dto.QuizDTO;
 import com.example.frontend.model.Course;
@@ -27,13 +30,13 @@ public class FrontendCourseController {
 
     @Value("${enrolment.service.url}")
     private String enrolmentServiceUrl;
-    
+
     @Value("${quiz.service.url}")
     private String quizServiceUrl;
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @GetMapping({"/", "/index"})
+    @GetMapping({ "/", "/index" })
     public String showIndex(Model model, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
@@ -45,29 +48,29 @@ public class FrontendCourseController {
         try {
             if (loggedInUser.getRole() == UserRole.STUDENT) {
                 ResponseEntity<Enrolment[]> enrolmentResponse = restTemplate.getForEntity(
-                    enrolmentServiceUrl + "/enrolments/student/" + loggedInUser.getId(), Enrolment[].class);
+                        enrolmentServiceUrl + "/enrolments/student/" + loggedInUser.getId(), Enrolment[].class);
                 List<Enrolment> enrolments = Arrays.asList(enrolmentResponse.getBody());
-    
+
                 List<Course> courses = new ArrayList<>();
                 for (Enrolment enrolment : enrolments) {
                     ResponseEntity<Course> courseResponse = restTemplate.getForEntity(
-                        courseServiceUrl + "/courses/" + enrolment.getCourseId(), Course.class);
+                            courseServiceUrl + "/courses/" + enrolment.getCourseId(), Course.class);
                     courses.add(courseResponse.getBody());
                 }
 
                 model.addAttribute("courses", courses);
             } else {
                 ResponseEntity<Course[]> response = restTemplate.getForEntity(
-                    courseServiceUrl + "/courses/teacher/" + loggedInUser.getId(), Course[].class);
+                        courseServiceUrl + "/courses/teacher/" + loggedInUser.getId(), Course[].class);
                 model.addAttribute("courses", Arrays.asList(response.getBody()));
             }
         } catch (Exception e) {
             model.addAttribute("error", "Could not load courses.");
             model.addAttribute("courses", List.of());
         }
-    
+
         return "index";
-    }    
+    }
 
     @GetMapping("/courses")
     public String viewCourses(Model model, HttpSession session) {
@@ -79,7 +82,7 @@ public class FrontendCourseController {
 
         try {
             ResponseEntity<Course[]> response = restTemplate.getForEntity(
-                courseServiceUrl + "/courses", Course[].class);
+                    courseServiceUrl + "/courses", Course[].class);
             List<Course> courses = Arrays.asList(response.getBody());
             model.addAttribute("courses", courses);
         } catch (Exception e) {
@@ -125,9 +128,15 @@ public class FrontendCourseController {
 
         // Get the quizzes that are part of a course through quiz service
         try {
-            ResponseEntity<QuizDTO[]> response = restTemplate.getForEntity(
-                quizServiceUrl + "/quizzes/byCourse/" + id, QuizDTO[].class);
-            List<QuizDTO> quizzes = Arrays.asList(response.getBody());
+            ResponseEntity<QuizCollectionModel> response = restTemplate.getForEntity(
+                    quizServiceUrl + "/quizzes/byCourse/" + id, QuizCollectionModel.class);
+
+            List<EntityModel<QuizDTO>> quizModels = response.getBody().getQuizzes();
+
+            List<QuizDTO> quizzes = quizModels.stream()
+                    .map(EntityModel::getContent)
+                    .collect(Collectors.toList());
+
             model.addAttribute("quizzes", quizzes);
         } catch (Exception e) {
             model.addAttribute("error", "Could not load quizzes.");

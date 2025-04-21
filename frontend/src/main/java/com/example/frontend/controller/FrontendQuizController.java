@@ -11,9 +11,13 @@ import jakarta.servlet.http.HttpSession;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.EntityModel;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -78,30 +82,39 @@ public class FrontendQuizController {
                 }
 
                 model.addAttribute("loggedInUser", user);
-                model.addAttribute("isStudent", user != null && user.getRole() == UserRole.STUDENT);
+                model.addAttribute("isStudent", user.getRole() == UserRole.STUDENT);
 
                 try {
                         String startUrl = quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + user.getId();
 
-                        ResponseEntity<Map> response = restTemplate.getForEntity(startUrl, Map.class);
-                        Map<String, Object> payload = response.getBody();
+                        // Try to get submission
+                        ResponseEntity<QuizSubmission> submissionResponse = restTemplate.exchange(
+                                        startUrl,
+                                        HttpMethod.GET,
+                                        null,
+                                        new ParameterizedTypeReference<QuizSubmission>() {
+                                        });
 
-                        Quiz quiz = restTemplate.getForObject(
-                                        quizServiceUrl + "/quizzes/" + id, Quiz.class);
-
-                        model.addAttribute("quiz", quiz);
-                        model.addAttribute("timeLeft", quiz.getTimeLeft());
-
-                        if (payload != null && payload.containsKey("studentAnswers")) {
-                                QuizSubmission submission = restTemplate.getForObject(
-                                                startUrl, QuizSubmission.class);
-
-                                model.addAttribute("submission", submission);
+                        if (submissionResponse.getStatusCode().is2xxSuccessful()
+                                        && submissionResponse.getBody().getStudentAnswers() != null) {
+                                model.addAttribute("submission", submissionResponse.getBody());
                                 return "submission-result";
-                        } else {
-                                model.addAttribute("quizSession", new HashMap<Integer, String>());
-                                return "quiz-attempt";
                         }
+
+                        ResponseEntity<EntityModel<QuizDTO>> quizResponse = restTemplate.exchange(
+                                        quizServiceUrl + "/quizzes/" + id,
+                                        HttpMethod.GET,
+                                        null,
+                                        new ParameterizedTypeReference<EntityModel<QuizDTO>>() {
+                                        });
+
+                        QuizDTO quizDto = quizResponse.getBody().getContent();
+
+                        model.addAttribute("quiz", quizDto);
+                        model.addAttribute("timeLeft", quizDto.getTimeLeft());
+                        model.addAttribute("quizSession", new HashMap<Integer, String>());
+
+                        return "quiz-attempt";
 
                 } catch (Exception e) {
                         model.addAttribute("error", "Error loading quiz: " + e.getMessage());
