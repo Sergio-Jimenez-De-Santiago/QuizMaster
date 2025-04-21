@@ -73,11 +73,6 @@ public class UserRestController {
 
     @GetMapping("/api/users/{id}/profile")
     public ResponseEntity<EntityModel<UserProfileDTO>> getUserProfile(@PathVariable Long id) {
-        try {
-            User user = userService.findById(id);
-            return ResponseEntity.ok(assembler.toModel(new UserProfileDTO(user)));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return userService.getUserProfile(id);
     }
 }

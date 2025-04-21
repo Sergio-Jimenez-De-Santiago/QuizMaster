@@ -59,7 +59,7 @@
         <p><h5>Total Questions:</h5> <span th:text="${quiz.questions.size()}"></span></p>
       </div>
 
-      <div class ="mt-5" th:if="${loggedInUser != null and loggedInUser.role != 'STUDENT'}"> 
+      <div class ="mt-5" th:if="${loggedInUser != null and !isStudent}"> 
       <h4>Questions</h4>
       <ul class="list-group" >
         <th:block th:each="entry : ${quiz.questions.entrySet()}">
@@ -78,11 +78,11 @@
 
       <div class="mt-5">
         <a href="/quizzes" class="btn btn-secondary">Back to Quizzes</a>
-        <a th:if="${STUDENT}"
+        <a th:if="${isStudent}"
         th:href="@{/quizzes/{id}/start(id=${quiz.id})}" 
         class="btn btn-secondary">Start Quiz</a>
         <form th:action="@{'/quizzes/' + ${quiz.id}}" method="post" style="display:inline;" 
-        th:if="${loggedInUser != null and loggedInUser.role == 'TEACHER'}">
+        th:if="${loggedInUser != null and !isStudent}">
       <input type="hidden" name="_method" value="delete"/>
       <button type="submit" class="btn btn-danger">Delete Quiz</button>
   </form>

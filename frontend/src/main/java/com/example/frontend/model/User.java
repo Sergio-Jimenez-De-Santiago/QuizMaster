@@ -1,12 +1,13 @@
 package com.example.frontend.model;
 
+import com.example.frontend.security.UserRole;
+
 public class User {
     private Long id;
     private String name;
     private String email;
     private String password;
-    private String role;
-    
+    private UserRole role;
 
     public Long getId() {
         return id;
@@ -36,10 +37,10 @@ public class User {
         this.password = password;
     }
 
-    public String getRole() {
+    public UserRole getRole() {
         return role;
     }
-    public void setRole(String role) {
+    public void setRole(UserRole role) {
         this.role = role;
     }
 }

@@ -5,6 +5,7 @@ import com.example.frontend.dto.QuizSubmissionDTO;
 import com.example.frontend.model.Quiz;
 import com.example.frontend.model.QuizSubmission;
 import com.example.frontend.model.User;
+import com.example.frontend.security.UserRole;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -36,8 +37,8 @@ public class FrontendQuizController {
                         model.addAttribute("quizzes", response.getBody());
                         Object userObj = session.getAttribute("loggedInUser");
                         User user = (User) userObj;
-                        model.addAttribute("STUDENT", user != null && "STUDENT".equals(user.getRole()));
                         model.addAttribute("loggedInUser", user);
+                        model.addAttribute("isStudent", user != null && user.getRole() == UserRole.STUDENT);
                         System.out.println("got quiz" + response.getBody());
                 } catch (Exception e) {
                         model.addAttribute("error", "Could not load quizzes.");
@@ -56,11 +57,12 @@ public class FrontendQuizController {
                 } catch (Exception e) {
                         model.addAttribute("error", "Could not load the quiz.");
                 }
+
                 Object userObj = session.getAttribute("loggedInUser");
                 User user = (User) userObj;
-                model.addAttribute("STUDENT", user != null && "STUDENT".equals(user.getRole()));
-                System.out.println(user.getRole());
                 model.addAttribute("loggedInUser", user);
+                model.addAttribute("isStudent", user != null && user.getRole() == UserRole.STUDENT);
+
                 return "quiz-detail";
         }
 
@@ -74,6 +76,9 @@ public class FrontendQuizController {
                 if (user == null) {
                         return "redirect:/login";
                 }
+
+                model.addAttribute("loggedInUser", user);
+                model.addAttribute("isStudent", user != null && user.getRole() == UserRole.STUDENT);
 
                 try {
                         String startUrl = quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + user.getId();
@@ -139,7 +144,7 @@ public class FrontendQuizController {
         public String createQuizForm(@PathVariable("courseId") Long courseId, Model model, HttpSession session) {
                 // Get loggedInUser through the HttpSession
                 User loggedInUser = (User) session.getAttribute("loggedInUser");
-                if (loggedInUser == null || !"TEACHER".equalsIgnoreCase(loggedInUser.getRole())) {
+                if (loggedInUser == null || loggedInUser.getRole() != UserRole.TEACHER) {
                         return "redirect:/login";
                 }
 
@@ -166,7 +171,7 @@ public class FrontendQuizController {
         public String createQuiz(@ModelAttribute Quiz quiz, Model model, HttpSession session) {
                 // Get loggedInUser through the HttpSession
                 User loggedInUser = (User) session.getAttribute("loggedInUser");
-                if (loggedInUser == null || !"TEACHER".equalsIgnoreCase(loggedInUser.getRole())) {
+                if (loggedInUser == null || loggedInUser.getRole() != UserRole.TEACHER) {
                         return "redirect:/login";
                 }
 
@@ -266,7 +271,7 @@ public class FrontendQuizController {
         public String showQuizList(Model model, HttpSession session) {
                 User user = (User) session.getAttribute("loggedInUser");
                 model.addAttribute("loggedInUser", user);
-                model.addAttribute("teacher", user != null && "TEACHER".equals(user.getRole()));
+                model.addAttribute("isStudent", user != null && user.getRole() == UserRole.STUDENT);
                 return "quiz-list";
         }
 

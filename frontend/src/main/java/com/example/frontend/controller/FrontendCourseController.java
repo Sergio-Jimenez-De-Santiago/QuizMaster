@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.frontend.model.User;
+import com.example.frontend.security.UserRole;
 import com.example.frontend.dto.QuizDTO;
 import com.example.frontend.model.Course;
 import com.example.frontend.model.Enrolment;
@@ -39,9 +40,10 @@ public class FrontendCourseController {
             return "redirect:/login";
         }
         model.addAttribute("loggedInUser", loggedInUser);
+        model.addAttribute("isStudent", loggedInUser != null && loggedInUser.getRole() == UserRole.STUDENT);
 
         try {
-            if ("STUDENT".equals(loggedInUser.getRole())) {
+            if (loggedInUser.getRole() == UserRole.STUDENT) {
                 ResponseEntity<Enrolment[]> enrolmentResponse = restTemplate.getForEntity(
                     enrolmentServiceUrl + "/enrolments/student/" + loggedInUser.getId(), Enrolment[].class);
                 List<Enrolment> enrolments = Arrays.asList(enrolmentResponse.getBody());
@@ -52,7 +54,7 @@ public class FrontendCourseController {
                         courseServiceUrl + "/courses/" + enrolment.getCourseId(), Course.class);
                     courses.add(courseResponse.getBody());
                 }
-    
+
                 model.addAttribute("courses", courses);
             } else {
                 ResponseEntity<Course[]> response = restTemplate.getForEntity(
@@ -95,7 +97,7 @@ public class FrontendCourseController {
             return "redirect:/login";
         }
         model.addAttribute("loggedInUser", loggedInUser);
-        model.addAttribute("STUDENT", loggedInUser != null && "STUDENT".equals(loggedInUser.getRole()));
+        model.addAttribute("isStudent", loggedInUser != null && loggedInUser.getRole() == UserRole.STUDENT);
 
         // Get course through course service
         try {
@@ -108,7 +110,7 @@ public class FrontendCourseController {
 
         // Check if student is already enrolled
         boolean alreadyEnrolled = false;
-        if ("STUDENT".equalsIgnoreCase(loggedInUser.getRole())) {
+        if (loggedInUser.getRole() == UserRole.STUDENT) {
             try {
                 ResponseEntity<Enrolment[]> response = restTemplate.getForEntity(
                         enrolmentServiceUrl + "/enrolments/student/" + loggedInUser.getId(), Enrolment[].class);
@@ -138,7 +140,7 @@ public class FrontendCourseController {
     public String showCreateCourseForm(Model model, HttpSession session) {
         User user = (User) session.getAttribute("loggedInUser");
 
-        if (user == null || !"TEACHER".equalsIgnoreCase(user.getRole())) {
+        if (user == null || user.getRole() != UserRole.TEACHER) {
             return "redirect:/index";
         }
 
@@ -152,7 +154,7 @@ public class FrontendCourseController {
     public String createCourse(@ModelAttribute Course course, Model model, HttpSession session) {
         User user = (User) session.getAttribute("loggedInUser");
 
-        if (user == null || !"TEACHER".equalsIgnoreCase(user.getRole())) {
+        if (user == null || user.getRole() != UserRole.TEACHER) {
             return "redirect:/login";
         }
 

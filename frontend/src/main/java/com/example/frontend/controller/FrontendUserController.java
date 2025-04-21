@@ -1,8 +1,11 @@
 package com.example.frontend.controller;
 
+import com.example.frontend.dto.UserProfileDTO;
 import com.example.frontend.model.User;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -73,41 +76,32 @@ public class FrontendUserController {
         return "redirect:/index";
     }
 
-    // @GetMapping({ "/", "/index" })
-    // public String showIndex(Model model, HttpSession session) {
-    //     User user = (User) session.getAttribute("loggedInUser");
-    //     model.addAttribute("loggedInUser", user);
-    //     model.addAttribute("teacher", user != null && "TEACHER".equals(user.getRole()));
-    //     // Load quizzes from quiz-service here
-    //     return "login";
-    // }
-
     @GetMapping("/profile")
     public String profile(Model model, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
             return "redirect:/login";
         }
+        model.addAttribute("loggedInUser", loggedInUser);
+
         try {
-            ResponseEntity<User> response = restTemplate.getForEntity(
-                    userServiceUrl + "/api/users/" + loggedInUser.getId(), User.class);
-            model.addAttribute("user", response.getBody());
+            ParameterizedTypeReference<EntityModel<UserProfileDTO>> responseType = new ParameterizedTypeReference<EntityModel<UserProfileDTO>>() {};
+
+            ResponseEntity<EntityModel<UserProfileDTO>> response = restTemplate.exchange(
+                userServiceUrl + "/api/users/" + loggedInUser.getId() + "/profile",
+                HttpMethod.GET,
+                null,
+                responseType
+            );
+
+            UserProfileDTO profile = response.getBody().getContent();
+            model.addAttribute("user", profile);
+
         } catch (Exception e) {
-            model.addAttribute("error", "Could not load profile");
+            e.printStackTrace();
             return "redirect:/login";
         }
 
         return "profile";
     }
-
-    @GetMapping("/profile2")
-    public String profile2(Model model, HttpSession session) {
-        User user = (User) session.getAttribute("loggedInUser");
-        if (user == null) {
-            return "redirect:/login";
-        }
-        model.addAttribute("loggedInUser", user);
-        return "profile";
-    }
-
 }
