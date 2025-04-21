@@ -13,6 +13,27 @@
           crossorigin="anonymous">
     <link th:href="@{/styles/header.css}" rel="stylesheet" />
 </head>
+<script th:inline="javascript">
+    let timeLeftMinutes = /*[[${timeLeft}]]*/ 5;
+
+    let timeLeft = parseInt(timeLeftMinutes, 10) * 60;
+
+    const countdown = setInterval(() => {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        const formatted = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        document.getElementById("timer-display").textContent = formatted;
+
+        if (timeLeft <= 0) {
+            clearInterval(countdown);
+            alert("Time's up! Submitting your quiz...");
+            document.querySelector("form").submit();
+        }
+
+        timeLeft--;
+    }, 1000);
+</script>
+
 <body>
 <header>
     <a href="/index" class="headerBrand">QuizMaster</a>
@@ -38,7 +59,10 @@
 <main>
     <div class="container mt-5">
         <h2 th:text="'Attempting Quiz: ' + ${quiz.title}" class="mb-4"></h2>
-
+        <div class="alert alert-warning text-center" role="alert">
+            ⏳ Time Remaining: <span id="timer-display">--:--</span>
+        </div>
+        
         <form th:action="@{'/submit-quiz/' + ${quiz.id}}" method="post" th:object="${quizSession}">
             <div class="form-group" th:each="entry : ${quiz.questions}">
                 <label th:for="'question_' + ${entry.key}">

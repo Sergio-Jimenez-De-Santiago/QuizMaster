@@ -65,42 +65,38 @@ public class FrontendQuizController {
         }
 
         @GetMapping("/quizzes/{id}/start")
-        public String startQuiz(@PathVariable Integer id, Model model, HttpSession session) {
-                User user = (User) session.getAttribute("loggedInUser");
+        public String startQuiz(
+                        @PathVariable Integer id,
+                        Model model,
+                        HttpSession session) {
 
+                User user = (User) session.getAttribute("loggedInUser");
                 if (user == null) {
                         return "redirect:/login";
                 }
 
                 try {
-                        String url = quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + user.getId();
+                        String startUrl = quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + user.getId();
 
-                        ResponseEntity<Object> response = restTemplate.getForEntity(url, Object.class);
-                        Object body = response.getBody();
+                        ResponseEntity<Map> response = restTemplate.getForEntity(startUrl, Map.class);
+                        Map<String, Object> payload = response.getBody();
 
-                        if (body instanceof LinkedHashMap map) {
-                                if (map.containsKey("studentAnswers")) {
-                                        Integer quizId = (Integer) map.get("quizId");
+                        Quiz quiz = restTemplate.getForObject(
+                                        quizServiceUrl + "/quizzes/" + id, Quiz.class);
 
-                                        ResponseEntity<Quiz> quizResponse = restTemplate.getForEntity(
-                                                        quizServiceUrl + "/quizzes/" + quizId, Quiz.class);
-                                        Quiz quiz = quizResponse.getBody();
-                                        ResponseEntity<QuizSubmission> quizSubmisssionResponse = restTemplate
-                                                        .getForEntity(url, QuizSubmission.class);
-                                        QuizSubmission submission = quizSubmisssionResponse.getBody();
-                                        model.addAttribute("submission", submission);
-                                        model.addAttribute("quiz", quiz);
-                                        return "submission-result";
-                                } else if (map.containsKey("questions")) {
-                                        // It's a quiz attempt
-                                        model.addAttribute("quiz", map);
-                                        model.addAttribute("quizSession", new HashMap<Integer, String>());
-                                        return "quiz-attempt";
-                                }
+                        model.addAttribute("quiz", quiz);
+                        model.addAttribute("timeLeft", quiz.getTimeLeft());
+
+                        if (payload != null && payload.containsKey("studentAnswers")) {
+                                QuizSubmission submission = restTemplate.getForObject(
+                                                startUrl, QuizSubmission.class);
+
+                                model.addAttribute("submission", submission);
+                                return "submission-result";
+                        } else {
+                                model.addAttribute("quizSession", new HashMap<Integer, String>());
+                                return "quiz-attempt";
                         }
-
-                        model.addAttribute("error", "Unexpected response format.");
-                        return "redirect:/quizzes";
 
                 } catch (Exception e) {
                         model.addAttribute("error", "Error loading quiz: " + e.getMessage());
@@ -111,14 +107,14 @@ public class FrontendQuizController {
         @DeleteMapping("/quizzes/{id}")
         public String deleteQuiz(@PathVariable Integer id, Model model, HttpSession session) {
                 try {
-                        
+
                         ResponseEntity<Quiz> quizResponse = restTemplate.getForEntity(
                                         quizServiceUrl + "/quizzes/" + id, Quiz.class);
                         Quiz quiz = quizResponse.getBody();
 
                         if (quiz == null) {
                                 model.addAttribute("error", "Quiz not found.");
-                                return "redirect:/quizzes"; 
+                                return "redirect:/quizzes";
                         }
 
                         long courseId = quiz.getCourseId();
