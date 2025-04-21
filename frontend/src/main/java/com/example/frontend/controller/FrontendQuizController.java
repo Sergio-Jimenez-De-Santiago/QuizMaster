@@ -118,7 +118,7 @@ public class FrontendQuizController {
 
                 } catch (Exception e) {
                         model.addAttribute("error", "Error loading quiz: " + e.getMessage());
-                        return "redirect:/quizzes";
+                        return "redirect:/courses";
                 }
         }
 
@@ -132,7 +132,7 @@ public class FrontendQuizController {
 
                         if (quiz == null) {
                                 model.addAttribute("error", "Quiz not found.");
-                                return "redirect:/quizzes";
+                                return "redirect:/courses";
                         }
 
                         long courseId = quiz.getCourseId();
@@ -148,7 +148,7 @@ public class FrontendQuizController {
                 } catch (Exception e) {
                         e.printStackTrace();
                         model.addAttribute("error", "Something went wrong trying to delete the quiz.");
-                        return "redirect:/quizzes";
+                        return "redirect:/courses";
                 }
         }
 
@@ -276,7 +276,7 @@ public class FrontendQuizController {
                         return "redirect:/courses/" + courseId;
                 } catch (Exception e) {
                         model.addAttribute("error", "Error submitting quiz: " + e.getMessage());
-                        return "redirect:/quizzes";
+                        return "redirect:/courses";
                 }
         }
 
