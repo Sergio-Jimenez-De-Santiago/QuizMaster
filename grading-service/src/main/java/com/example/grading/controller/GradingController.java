@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/grades")
 public class GradingController {
 
     private final GradingService gradingService;
@@ -23,19 +22,19 @@ public class GradingController {
         this.gradingService = gradingService;
     }
 
-    @PostMapping
-    public ResponseEntity<Grade> gradeQuiz(@RequestBody GradeRequestDTO requestDTO) {
+    @PostMapping("/grades/evaluate")
+    public ResponseEntity<Grade> evaluateAndStoreGrade(@RequestBody GradeRequestDTO requestDTO) {
         Grade grade = gradingService.calculateAndSaveGrade(requestDTO);
         return new ResponseEntity<>(grade, HttpStatus.CREATED);
     }
 
-    @GetMapping
+    @GetMapping("/grades")
     public ResponseEntity<List<Grade>> getAllGrades() {
         List<Grade> grades = gradingService.getAllGrades();
         return new ResponseEntity<>(grades, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/grades/{id}")
     public ResponseEntity<Grade> getGradeById(@PathVariable Long id) {
         Grade grade = gradingService.getGradeById(id);
         if (grade != null) {
@@ -45,19 +44,15 @@ public class GradingController {
         }
     }
 
-    @GetMapping("/student/{studentId}")
+    @GetMapping("/grades/student/{studentId}")
     public ResponseEntity<List<Grade>> getGradesByStudentId(@PathVariable Long studentId) {
         List<Grade> grades = gradingService.getGradesByStudentId(studentId);
         return new ResponseEntity<>(grades, HttpStatus.OK);
     }
     
-    @GetMapping("/student/{studentId}/quiz/{quizId}")
-    public ResponseEntity<Grade> getGradeByStudentIdAndQuizId(
-            @PathVariable Long studentId,
-            @PathVariable Long quizId) {
+    @GetMapping("/grades/student/{studentId}/quiz/{quizId}")
+    public ResponseEntity<Grade> getGradeByStudentIdAndQuizId(@PathVariable Long studentId, @PathVariable Long quizId) {
         Optional<Grade> gradeOpt = gradingService.getGradesByStudentIdAndQuizId(studentId, quizId);
-        return gradeOpt.map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
+        return gradeOpt.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
-
 }

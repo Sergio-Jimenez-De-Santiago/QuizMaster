@@ -2,22 +2,15 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Quiz List</title>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    
-    <!-- Bootstrap & FontAwesome -->
-    <link rel="stylesheet"
-          href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
-          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
-          crossorigin="anonymous">
-    <link rel="stylesheet"
-          href="https://use.fontawesome.com/releases/v5.4.1/css/all.css"
-          integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz"
-          crossorigin="anonymous">
-          <link th:href="@{/styles/header.css}" rel="stylesheet"/>
-        </head>
+    <title>QuizMaster - Quiz Details</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.1/css/all.css" integrity="sha384-5sAR7xN1Nv6T6+dT2mhtzEpVJvfS3NScPQTrOxhwjIuvcA67KV2R5Jz6kr4abQsz" crossorigin="anonymous">
+    <link rel="stylesheet" href="/styles/header.css">
+</head>
 
 <body>
 <header>
@@ -42,64 +35,56 @@
 </header>
 
 <main>
-    <div class="container my-5">
-      <!-- Display quiz title -->
-      <h2 class="mb-5" th:text="${quiz.title}">Quiz Title</h2>
+  <div class="container my-5">
+    <h2 class="mb-5" th:text="${quiz.title}">Quiz Title</h2>
 
-      <!-- Time allowed and due date -->
-      <div class="row">
-        <div class="col-md-6">
-          <h5>Time Allowed:</h5>
-          <!-- Expression fully enclosed within ${...} -->
-          <p th:text="${quiz.timeLeft} + ' minutes'">Time Left</p>
-        </div>
+    <div class="row">
+      <div class="col-md-6">
+        <h5>Time Allowed:</h5>
+        <p th:text="${quiz.timeLeft} + ' minutes'">Time Left</p>
       </div>
-
-      <div class ="mt-5" th:if="${loggedInUser != null}"> 
-        <p><h5>Total Questions:</h5> <span th:text="${quiz.questions.size()}"></span></p>
-      </div>
-
-      <div class="mt-3" th:if="${grade != null}">
-        <h5>DEBUG: Grade found</h5>
-        <p th:text="${grade}">Should show score here</p>
-    </div>
-    
-      <div class ="mt-5" th:if="${loggedInUser != null and !isStudent}"> 
-      <h4>Questions</h4>
-      <ul class="list-group" >
-        <th:block th:each="entry : ${quiz.questions.entrySet()}">
-          <li class="list-group-item">
-            <strong th:text="${entry.key}">Question #</strong>:
-            <span th:text="${entry.value}">Question Text</span>
-            <div class="mt-3">
-                <strong>Teacher's Answer:</strong>
-                <span th:text="${quiz.teacherAnswers.get(entry.key)}">Answer Text</span>
-              </div>
-              
-          </li>
-        </th:block>
-      </ul>
     </div>
 
-      <div class="mt-5">
-        <a th:href="@{/courses/{id}(id=${quiz.courseId})}" class="btn btn-secondary">Back To Course</a>
-        <a th:if="${isStudent and !submission}"
-        th:href="@{/quizzes/{id}/start(id=${quiz.id})}" 
-        class="btn btn-secondary">Start Quiz</a>
-        <a th:if="${submission}"
-        th:href="@{/quizzes/{id}/start(id=${quiz.id})}" 
-        class="btn btn-secondary">See Result</a>
-        <form th:action="@{'/quizzes/' + ${quiz.id}}" method="post" style="display:inline;" 
-        th:if="${loggedInUser != null and !isStudent}">
-      <input type="hidden" name="_method" value="delete"/>
-      <button type="submit" class="btn btn-danger">Delete Quiz</button>
-  </form>
-
-      </div>
-    
-    
-    
+    <div class ="mt-5" th:if="${loggedInUser != null}"> 
+      <p><h5>Total Questions:</h5> <span th:text="${quiz.questions.size()}"></span></p>
     </div>
-  </main>
+
+    <div class="mt-4" th:if="${isStudent and submission}">
+      <h4>Your Score</h4>
+      <div th:if="${grade != null}">
+          <p class="lead"><strong th:text="${grade} + '%'">Score</strong></p>
+      </div>
+      <div th:if="${grade == null}">
+          <p class="text-muted">Grading is in progress, please check back soon.</p>
+      </div>
+    </div>
+
+    <div class ="mt-5" th:if="${loggedInUser != null and !isStudent}"> 
+    <h4>Questions</h4>
+    <ul class="list-group" >
+      <th:block th:each="entry : ${quiz.questions.entrySet()}">
+        <li class="list-group-item">
+          <strong th:text="${entry.key}">Question #</strong>:
+          <span th:text="${entry.value}">Question Text</span>
+          <div class="mt-3">
+              <strong>Teacher's Answer:</strong>
+              <span th:text="${quiz.teacherAnswers.get(entry.key)}">Answer Text</span>
+            </div>
+            
+        </li>
+      </th:block>
+    </ul>
+  </div>
+
+    <div class="mt-5">
+      <a th:href="@{/courses/{id}(id=${quiz.courseId})}" class="btn btn-secondary">Back To Course</a>
+      <a th:if="${isStudent and !submission}" th:href="@{/quizzes/{id}/start(id=${quiz.id})}" class="btn btn-secondary">Start Quiz</a>
+      <a th:if="${submission}" th:href="@{/quizzes/{id}/start(id=${quiz.id})}" class="btn btn-secondary">See Result</a>
+      <form th:action="@{'/quizzes/' + ${quiz.id}}" method="post" style="display:inline;" th:if="${loggedInUser != null and !isStudent}">
+        <input type="hidden" name="_method" value="delete"/>
+        <button type="submit" class="btn btn-danger">Delete Quiz</button>
+      </form>
+    </div>
+</main>
 </body>
 </html>

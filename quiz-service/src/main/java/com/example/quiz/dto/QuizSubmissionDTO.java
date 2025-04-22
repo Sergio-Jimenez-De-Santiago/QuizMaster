@@ -2,6 +2,8 @@ package com.example.quiz.dto;
 
 import java.util.Map;
 
+import com.example.quiz.model.QuizSubmission;
+
 public class QuizSubmissionDTO {
     private Long id;
     private Long studentId;
@@ -48,6 +50,15 @@ public class QuizSubmissionDTO {
 
     public void setStudentAnswers(Map<Integer, String> studentAnswers) {
         this.studentAnswers = studentAnswers;
+    }
+
+    public QuizSubmission toEntity() {
+        QuizSubmission entity = new QuizSubmission();
+        entity.setId(this.id);
+        entity.setStudentId(this.studentId);
+        entity.setQuizId(this.quizId);
+        entity.setStudentAnswers(this.studentAnswers);
+        return entity;
     }
 
 

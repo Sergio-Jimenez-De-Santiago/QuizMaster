@@ -118,12 +118,15 @@ public class QuizController {
     }
 
     @PostMapping("/quizzes/{id}/submit")
-    public ResponseEntity<String> submitQuiz(@RequestBody QuizSubmissionDTO quizSubmissionDTO) {
-        QuizSubmission submission = new QuizSubmission();
-        submission.setQuizId(quizSubmissionDTO.getQuizId());
-        submission.setStudentId(quizSubmissionDTO.getStudentId());
-        submission.setStudentAnswers(quizSubmissionDTO.getStudentAnswers());
-        quizService.submit(submission);
-        return ResponseEntity.ok("Quiz attempt submitted successfully.");
+    public ResponseEntity<QuizSubmissionDTO> submitQuiz(@PathVariable Long id, @RequestBody QuizSubmissionDTO quizSubmissionDTO) {
+        QuizSubmission saved = quizService.submit(quizSubmissionDTO.toEntity());
+        QuizSubmissionDTO result = new QuizSubmissionDTO(
+            saved.getId(),
+            saved.getStudentId(),
+            saved.getQuizId(),
+            saved.getStudentAnswers()
+        );
+
+        return ResponseEntity.ok(result);
     }
 }

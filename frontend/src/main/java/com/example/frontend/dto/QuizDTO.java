@@ -11,8 +11,6 @@ public class QuizDTO {
     private Map<Integer, String> teacherAnswers;
     private Map<Integer, String> studentAnswers;
 
-    // Getters and setters
-
     public long getId() {
         return id;
     }

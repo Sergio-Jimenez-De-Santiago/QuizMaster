@@ -21,6 +21,10 @@ public class GradingService {
         Map<Integer, String> studentAnswers = dto.getStudentAnswers();
         Map<Integer, String> correctAnswers = dto.getCorrectAnswers();
 
+        System.out.println("Received grading request for student " + dto.getStudentId() + ", quiz " + dto.getQuizId());
+        System.out.println("Student answers: " + studentAnswers);
+        System.out.println("Correct answers: " + correctAnswers);
+
         int totalQuestions = correctAnswers.size();
         int correctCount = 0;
 
@@ -41,7 +45,13 @@ public class GradingService {
         grade.setStudentId(dto.getStudentId());
         grade.setScore(score);
 
-        return gradeRepository.save(grade);
+        System.out.println("🧮 Calculated score: " + score + "%");
+        System.out.println("💾 Saving grade to DB...");
+
+        Grade saved = gradeRepository.save(grade);
+
+        System.out.println("✅ Grade saved with ID: " + saved.getGradeId());
+        return saved;
     }
 
     public List<Grade> getAllGrades() {

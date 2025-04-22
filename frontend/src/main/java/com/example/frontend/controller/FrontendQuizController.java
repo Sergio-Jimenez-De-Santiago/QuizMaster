@@ -75,16 +75,15 @@ public class FrontendQuizController {
 
                 if (submissionResponse.getStudentAnswers() != null) {
                         model.addAttribute("submission", true);
-                }
-                else{
+                } else {
                         model.addAttribute("submission", false);
 
                 }
                 model.addAttribute("loggedInUser", user);
                 model.addAttribute("isStudent", user != null && user.getRole() == UserRole.STUDENT);
 
-                //show grade
-                if (user.getRole() == UserRole.STUDENT) {
+                // show grade
+                if (user != null && user.getRole() == UserRole.STUDENT) {
                         try {
                                 String gradeUrl = gradingServiceUrl + "/grades/student/" + user.getId() + "/quiz/" + id;
                                 ResponseEntity<Grade> gradeResponse = restTemplate.getForEntity(gradeUrl, Grade.class);
@@ -273,8 +272,17 @@ public class FrontendQuizController {
                         @RequestParam Map<String, String> allParams,
                         HttpSession session,
                         Model model) {
-                Map<Integer, String> studentAnswers = new HashMap<>();
 
+                User user = (User) session.getAttribute("loggedInUser");
+                if (user == null) {
+                        System.err.println("⚠️ No logged-in user. Redirecting to login.");
+                        return "redirect:/login";
+                }
+
+                model.addAttribute("loggedInUser", user);
+                model.addAttribute("isStudent", user.getRole() == UserRole.STUDENT);
+
+                Map<Integer, String> studentAnswers = new HashMap<>();
                 for (Map.Entry<String, String> entry : allParams.entrySet()) {
                         String key = entry.getKey();
                         if (key.startsWith("studentAnswers[")) {
@@ -288,58 +296,63 @@ public class FrontendQuizController {
                         }
                 }
 
-                User user = (User) session.getAttribute("loggedInUser");
-
                 try {
-                        String url = quizServiceUrl + "/quizzes/" + id + "/submit";
-
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-
+                        // 1. Submit quiz
+                        String submitUrl = quizServiceUrl + "/quizzes/" + id + "/submit";
                         QuizSubmissionDTO submissionDTO = new QuizSubmissionDTO();
                         submissionDTO.setQuizId(id);
                         submissionDTO.setStudentAnswers(studentAnswers);
-                        if (user != null) {
-                                submissionDTO.setStudentId((user.getId()));
-                        }
+                        submissionDTO.setStudentId(user.getId());
 
-                        HttpEntity<QuizSubmissionDTO> request = new HttpEntity<>(submissionDTO, headers);
-
+                        System.out.println("Sending quiz submission to " + submitUrl);
                         ResponseEntity<QuizSubmissionDTO> response = restTemplate.postForEntity(
-                                        url, request, QuizSubmissionDTO.class);
+                                        submitUrl, submissionDTO, QuizSubmissionDTO.class);
 
                         QuizSubmissionDTO submission = response.getBody();
+                        System.out.println("Quiz submitted. Response: " + submission);
 
-                        System.out.println("Submitted answers: " + studentAnswers);
-                        System.out.println("Received submission DTO: " + submission);
-
-                        model.addAttribute("message", "Quiz submitted successfully!");
-                        ResponseEntity<Quiz> quizResponse = restTemplate.getForEntity(
-                                        quizServiceUrl + "/quizzes/" + id, Quiz.class);
+                        // 2. Fetch quiz
+                        String quizUrl = quizServiceUrl + "/quizzes/" + id;
+                        ResponseEntity<Quiz> quizResponse = restTemplate.getForEntity(quizUrl, Quiz.class);
                         Quiz quiz = quizResponse.getBody();
 
-                        //create grade for the quiz submitted
-                        String gradeUrl = gradingServiceUrl + "/grades";
+                        System.out.println("Fetched quiz: " + quiz);
+                        if (quiz == null) {
+                                System.err.println("❌ Quiz was null.");
+                                return "redirect:/courses";
+                        }
 
+                        Map<Integer, String> correctAnswers = quiz.getTeacherAnswers();
+                        if (correctAnswers == null || correctAnswers.isEmpty()) {
+                                System.err.println("❌ teacherAnswers is missing — skipping grading.");
+                                return "redirect:/courses";
+                        }
+
+                        System.out.println("Preparing grading request...");
                         GradeRequestDTO gradeRequest = new GradeRequestDTO();
                         gradeRequest.setStudentId(user.getId());
-                        gradeRequest.setQuizId((long) id);
+                        gradeRequest.setQuizId(id.longValue());
                         gradeRequest.setStudentAnswers(studentAnswers);
-                        gradeRequest.setCorrectAnswers(quiz.getTeacherAnswers());
+                        gradeRequest.setCorrectAnswers(correctAnswers);
 
-                        HttpEntity<GradeRequestDTO> gradeRequestEntity = new HttpEntity<>(gradeRequest, headers);
+                        // 3. Call grading service
+                        try {
+                                String gradingUrl = gradingServiceUrl + "/grades/evaluate";
+                                System.out.println("Calling grading service at: " + gradingUrl);
+                                ResponseEntity<Grade> gradeResponse = restTemplate.postForEntity(gradingUrl,
+                                                gradeRequest, Grade.class);
+                                System.out.println("Grading result: " + gradeResponse.getBody());
+                        } catch (Exception e) {
+                                System.err.println("❗ Grading failed: ");
+                                e.printStackTrace();
+                        }
 
-                        ResponseEntity<Grade> gradeResponse = restTemplate.postForEntity(
-                                gradeUrl, gradeRequestEntity, Grade.class);
+                        model.addAttribute("message", "Quiz submitted successfully!");
+                        return "redirect:/courses/" + quiz.getCourseId();
 
-                        Grade grade = gradeResponse.getBody();
-                        System.out.println("Grading result: " + grade);
-                        model.addAttribute("grade", grade.getScore());
-
-
-                        long courseId = quiz.getCourseId();
-                        return "redirect:/courses/" + courseId;
                 } catch (Exception e) {
+                        System.err.println("❗ Quiz submission failed: ");
+                        e.printStackTrace();
                         model.addAttribute("error", "Error submitting quiz: " + e.getMessage());
                         return "redirect:/courses";
                 }

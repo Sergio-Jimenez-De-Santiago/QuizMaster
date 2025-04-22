@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 @Entity
 @Table(name = "grades")
 public class Grade {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long gradeId;
@@ -19,6 +20,14 @@ public class Grade {
     @NotNull(message = "QuizId is mandatory")
     private Long quizId;
 
+    public Grade() {
+    }
+
+    public Grade(Long studentId, Long quizId, int score) {
+        this.studentId = studentId;
+        this.quizId = quizId;
+        this.score = score;
+    }
 
     public Long getGradeId() {
         return gradeId;
@@ -32,16 +41,16 @@ public class Grade {
         return studentId;
     }
 
-    public int getScore(){
+    public void setStudentId(Long studentId) {
+        this.studentId = studentId;
+    }
+
+    public int getScore() {
         return score;
     }
 
-    public void setScore(int score){
+    public void setScore(int score) {
         this.score = score;
-    }
-
-    public void setStudentId(Long studentId) {
-        this.studentId = studentId;
     }
 
     public Long getQuizId() {

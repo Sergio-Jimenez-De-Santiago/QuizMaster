@@ -8,6 +8,18 @@ public class GradeRequestDTO {
     private Map<Integer, String> studentAnswers;
     private Map<Integer, String> correctAnswers;
 
+    public GradeRequestDTO() {
+    }
+
+    public GradeRequestDTO(Long studentId, Long quizId,
+            Map<Integer, String> studentAnswers,
+            Map<Integer, String> correctAnswers) {
+        this.studentId = studentId;
+        this.quizId = quizId;
+        this.studentAnswers = studentAnswers;
+        this.correctAnswers = correctAnswers;
+    }
+
     public Long getStudentId() {
         return studentId;
     }
@@ -24,20 +36,19 @@ public class GradeRequestDTO {
         this.quizId = quizId;
     }
 
-    public Map<Integer, String> getStudentAnswers(){
+    public Map<Integer, String> getStudentAnswers() {
         return studentAnswers;
     }
 
-    public void studentAnswers(Map<Integer, String> studentAnswers){
+    public void setStudentAnswers(Map<Integer, String> studentAnswers) {
         this.studentAnswers = studentAnswers;
     }
 
-    public Map<Integer, String> getCorrectAnswers(){
+    public Map<Integer, String> getCorrectAnswers() {
         return correctAnswers;
     }
 
-    public void correctAnswers(Map<Integer, String> correctAnswers){
+    public void setCorrectAnswers(Map<Integer, String> correctAnswers) {
         this.correctAnswers = correctAnswers;
     }
 }
-
