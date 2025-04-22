@@ -73,11 +73,7 @@ public class FrontendQuizController {
         }
 
         @GetMapping("/quizzes/{id}/start")
-        public String startQuiz(
-                        @PathVariable Integer id,
-                        Model model,
-                        HttpSession session) {
-
+        public String startQuiz(@PathVariable Integer id, Model model, HttpSession session) {
                 User user = (User) session.getAttribute("loggedInUser");
                 if (user == null) {
                         return "redirect:/login";
@@ -87,9 +83,16 @@ public class FrontendQuizController {
                 model.addAttribute("isStudent", user.getRole() == UserRole.STUDENT);
 
                 try {
-                        String startUrl = quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + user.getId();
+                        ResponseEntity<EntityModel<QuizDTO>> quizResponse = restTemplate.exchange(
+                                        quizServiceUrl + "/quizzes/" + id,
+                                        HttpMethod.GET,
+                                        null,
+                                        new ParameterizedTypeReference<EntityModel<QuizDTO>>() {
+                                        });
+                        QuizDTO quizDto = quizResponse.getBody().getContent();
+                        model.addAttribute("quiz", quizDto);
 
-                        // Try to get submission
+                        String startUrl = quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + user.getId();
                         ResponseEntity<QuizSubmission> submissionResponse = restTemplate.exchange(
                                         startUrl,
                                         HttpMethod.GET,
@@ -97,25 +100,15 @@ public class FrontendQuizController {
                                         new ParameterizedTypeReference<QuizSubmission>() {
                                         });
 
-                        if (submissionResponse.getStatusCode().is2xxSuccessful()
-                                        && submissionResponse.getBody().getStudentAnswers() != null) {
+                        if (submissionResponse.getStatusCode().is2xxSuccessful() &&
+                                        submissionResponse.getBody().getStudentAnswers() != null) {
+
                                 model.addAttribute("submission", submissionResponse.getBody());
                                 return "submission-result";
                         }
 
-                        ResponseEntity<EntityModel<QuizDTO>> quizResponse = restTemplate.exchange(
-                                        quizServiceUrl + "/quizzes/" + id,
-                                        HttpMethod.GET,
-                                        null,
-                                        new ParameterizedTypeReference<EntityModel<QuizDTO>>() {
-                                        });
-
-                        QuizDTO quizDto = quizResponse.getBody().getContent();
-
-                        model.addAttribute("quiz", quizDto);
                         model.addAttribute("timeLeft", quizDto.getTimeLeft());
                         model.addAttribute("quizSession", new HashMap<Integer, String>());
-
                         return "quiz-attempt";
 
                 } catch (Exception e) {
@@ -195,9 +188,10 @@ public class FrontendQuizController {
                         if (quiz.getTitle() == null || quiz.getTitle().trim().isEmpty() ||
                                         quiz.getTimeLeft() == null || quiz.getTimeLeft().trim().isEmpty() ||
                                         quiz.getQuestionsText() == null || quiz.getQuestionsText().trim().isEmpty() ||
-                                        quiz.getTeacherAnswersText() == null || quiz.getTeacherAnswersText().trim().isEmpty()) {
+                                        quiz.getTeacherAnswersText() == null
+                                        || quiz.getTeacherAnswersText().trim().isEmpty()) {
 
-                                model.addAttribute("error",  "All fields must be filled in");
+                                model.addAttribute("error", "All fields must be filled in");
                                 return "create-quiz";
                         }
 

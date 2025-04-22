@@ -63,7 +63,7 @@
         </ul>
 
         <div class="mt-4">
-            <a href="/quizzes" class="btn btn-secondary">Back to Quizzes</a>
+            <a th:href="@{/courses/{id}(id=${quiz.courseId})}" class="btn btn-secondary">Back To Course</a>
         </div>
     </div>
 </main>

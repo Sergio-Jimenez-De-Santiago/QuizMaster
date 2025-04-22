@@ -77,7 +77,7 @@
     </div>
 
       <div class="mt-5">
-        <a href="/quizzes" class="btn btn-secondary">Back to Quizzes</a>
+        <a th:href="@{/courses/{id}(id=${quiz.courseId})}" class="btn btn-secondary">Back To Course</a>
         <a th:if="${isStudent}"
         th:href="@{/quizzes/{id}/start(id=${quiz.id})}" 
         class="btn btn-secondary">Start Quiz</a>
@@ -86,7 +86,7 @@
       <input type="hidden" name="_method" value="delete"/>
       <button type="submit" class="btn btn-danger">Delete Quiz</button>
   </form>
-  
+
       </div>
     
     
