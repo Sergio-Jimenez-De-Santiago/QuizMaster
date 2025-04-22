@@ -1,7 +1,9 @@
 package com.example.frontend.controller;
 
+import com.example.frontend.dto.GradeRequestDTO;
 import com.example.frontend.dto.QuizDTO;
 import com.example.frontend.dto.QuizSubmissionDTO;
+import com.example.frontend.model.Grade;
 import com.example.frontend.model.Quiz;
 import com.example.frontend.model.QuizSubmission;
 import com.example.frontend.model.User;
@@ -32,6 +34,8 @@ public class FrontendQuizController {
 
         @Value("${quiz.service.url}")
         private String quizServiceUrl;
+        @Value("${grading.service.url}")
+        private String gradingServiceUrl;
 
         private final RestTemplate restTemplate = new RestTemplate();
 
@@ -78,6 +82,21 @@ public class FrontendQuizController {
                 }
                 model.addAttribute("loggedInUser", user);
                 model.addAttribute("isStudent", user != null && user.getRole() == UserRole.STUDENT);
+
+                //show grade
+                if (user.getRole() == UserRole.STUDENT) {
+                        try {
+                                String gradeUrl = gradingServiceUrl + "/grades/student/" + user.getId() + "/quiz/" + id;
+                                ResponseEntity<Grade> gradeResponse = restTemplate.getForEntity(gradeUrl, Grade.class);
+                                Grade grade = gradeResponse.getBody();
+                                if (grade != null) {
+                                        model.addAttribute("grade", grade.getScore());
+                                        System.out.println("Found grade: " + grade.getScore());
+                                }
+                        } catch (Exception e) {
+                                System.out.println("Grade not available yet: " + e.getMessage());
+                        }
+                }
 
                 return "quiz-detail";
         }
@@ -298,6 +317,26 @@ public class FrontendQuizController {
                         ResponseEntity<Quiz> quizResponse = restTemplate.getForEntity(
                                         quizServiceUrl + "/quizzes/" + id, Quiz.class);
                         Quiz quiz = quizResponse.getBody();
+
+                        //create grade for the quiz submitted
+                        String gradeUrl = gradingServiceUrl + "/grades";
+
+                        GradeRequestDTO gradeRequest = new GradeRequestDTO();
+                        gradeRequest.setStudentId(user.getId());
+                        gradeRequest.setQuizId((long) id);
+                        gradeRequest.setStudentAnswers(studentAnswers);
+                        gradeRequest.setCorrectAnswers(quiz.getTeacherAnswers());
+
+                        HttpEntity<GradeRequestDTO> gradeRequestEntity = new HttpEntity<>(gradeRequest, headers);
+
+                        ResponseEntity<Grade> gradeResponse = restTemplate.postForEntity(
+                                gradeUrl, gradeRequestEntity, Grade.class);
+
+                        Grade grade = gradeResponse.getBody();
+                        System.out.println("Grading result: " + grade);
+                        model.addAttribute("grade", grade.getScore());
+
+
                         long courseId = quiz.getCourseId();
                         return "redirect:/courses/" + courseId;
                 } catch (Exception e) {

@@ -18,7 +18,7 @@
         <module>quiz-service</module> 
         <module>enrolment-service</module>
         <module>course-service</module>
-        <!-- <module>grading-service</module> -->
+        <module>grading-service</module>
     </modules>
 
     <dependencies>
