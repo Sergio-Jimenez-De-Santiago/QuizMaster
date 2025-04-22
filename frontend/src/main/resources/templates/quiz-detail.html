@@ -78,9 +78,12 @@
 
       <div class="mt-5">
         <a th:href="@{/courses/{id}(id=${quiz.courseId})}" class="btn btn-secondary">Back To Course</a>
-        <a th:if="${isStudent}"
+        <a th:if="${isStudent and !submission}"
         th:href="@{/quizzes/{id}/start(id=${quiz.id})}" 
         class="btn btn-secondary">Start Quiz</a>
+        <a th:if="${submission}"
+        th:href="@{/quizzes/{id}/start(id=${quiz.id})}" 
+        class="btn btn-secondary">See Result</a>
         <form th:action="@{'/quizzes/' + ${quiz.id}}" method="post" style="display:inline;" 
         th:if="${loggedInUser != null and !isStudent}">
       <input type="hidden" name="_method" value="delete"/>

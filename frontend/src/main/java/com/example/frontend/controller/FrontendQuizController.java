@@ -63,9 +63,19 @@ public class FrontendQuizController {
                 } catch (Exception e) {
                         model.addAttribute("error", "Could not load the quiz.");
                 }
+                User user = (User) session.getAttribute("loggedInUser");
 
-                Object userObj = session.getAttribute("loggedInUser");
-                User user = (User) userObj;
+                QuizSubmission submissionResponse = restTemplate.getForObject(
+                                quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + user.getId(),
+                                QuizSubmission.class);
+
+                if (submissionResponse.getStudentAnswers() != null) {
+                        model.addAttribute("submission", true);
+                }
+                else{
+                        model.addAttribute("submission", false);
+
+                }
                 model.addAttribute("loggedInUser", user);
                 model.addAttribute("isStudent", user != null && user.getRole() == UserRole.STUDENT);
 
@@ -83,31 +93,20 @@ public class FrontendQuizController {
                 model.addAttribute("isStudent", user.getRole() == UserRole.STUDENT);
 
                 try {
-                        ResponseEntity<EntityModel<QuizDTO>> quizResponse = restTemplate.exchange(
-                                        quizServiceUrl + "/quizzes/" + id,
-                                        HttpMethod.GET,
-                                        null,
-                                        new ParameterizedTypeReference<EntityModel<QuizDTO>>() {
-                                        });
-                        QuizDTO quizDto = quizResponse.getBody().getContent();
-                        model.addAttribute("quiz", quizDto);
+                        ResponseEntity<Quiz> response = restTemplate.getForEntity(
+                                        quizServiceUrl + "/quizzes/" + id, Quiz.class);
+                        model.addAttribute("quiz", response.getBody());
 
-                        String startUrl = quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + user.getId();
-                        ResponseEntity<QuizSubmission> submissionResponse = restTemplate.exchange(
-                                        startUrl,
-                                        HttpMethod.GET,
-                                        null,
-                                        new ParameterizedTypeReference<QuizSubmission>() {
-                                        });
+                        QuizSubmission submissionResponse = restTemplate.getForObject(
+                                        quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + user.getId(),
+                                        QuizSubmission.class);
 
-                        if (submissionResponse.getStatusCode().is2xxSuccessful() &&
-                                        submissionResponse.getBody().getStudentAnswers() != null) {
-
-                                model.addAttribute("submission", submissionResponse.getBody());
+                        if (submissionResponse.getStudentAnswers() != null) {
+                                model.addAttribute("submission", submissionResponse);
                                 return "submission-result";
                         }
 
-                        model.addAttribute("timeLeft", quizDto.getTimeLeft());
+                        model.addAttribute("timeLeft", response.getBody().getTimeLeft());
                         model.addAttribute("quizSession", new HashMap<Integer, String>());
                         return "quiz-attempt";
 
