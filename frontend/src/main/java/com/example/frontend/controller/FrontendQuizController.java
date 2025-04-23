@@ -3,6 +3,7 @@ package com.example.frontend.controller;
 import com.example.frontend.dto.GradeRequestDTO;
 import com.example.frontend.dto.QuizDTO;
 import com.example.frontend.dto.QuizSubmissionDTO;
+import com.example.frontend.model.Course;
 import com.example.frontend.model.Grade;
 import com.example.frontend.model.Quiz;
 import com.example.frontend.model.QuizSubmission;
@@ -36,6 +37,8 @@ public class FrontendQuizController {
         private String quizServiceUrl;
         @Value("${grading.service.url}")
         private String gradingServiceUrl;
+        @Value("${course.service.url}")
+        private String courseServiceUrl;
 
         private final RestTemplate restTemplate = new RestTemplate();
 
@@ -58,34 +61,63 @@ public class FrontendQuizController {
 
         @GetMapping("/quizzes/{id}")
         public String getQuiz(@PathVariable Integer id, Model model, HttpSession session) {
+                // Get loggedInUser through the HttpSession
+                User loggedInUser = (User) session.getAttribute("loggedInUser");
+                if (loggedInUser == null) {
+                        return "redirect:/login";
+                }
+                model.addAttribute("loggedInUser", loggedInUser);
+
+                Quiz quiz = null;
                 try {
                         ResponseEntity<Quiz> response = restTemplate.getForEntity(
                                         quizServiceUrl + "/quizzes/" + id, Quiz.class);
-                        model.addAttribute("quiz", response.getBody());
+                        quiz = response.getBody();
+                        model.addAttribute("quiz", quiz);
                         System.out.println("Got quiz with id: " + id);
-                        System.out.println(response.getBody());
+                        System.out.println(quiz);
                 } catch (Exception e) {
                         model.addAttribute("error", "Could not load the quiz.");
+                        return "quiz-detail";
                 }
-                User user = (User) session.getAttribute("loggedInUser");
 
-                QuizSubmission submissionResponse = restTemplate.getForObject(
-                                quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + user.getId(),
-                                QuizSubmission.class);
+                // Get the course associated with the quiz
+                Course course = null;
+                try {
+                        ResponseEntity<Course> courseResponse = restTemplate.getForEntity(
+                                        courseServiceUrl + "/courses/" + quiz.getCourseId(), Course.class);
+                        course = courseResponse.getBody();
+                } catch (Exception e) {
+                        model.addAttribute("error", "Could not determine course ownership.");
+                        return "quiz-detail";
+                }
 
-                if (submissionResponse.getStudentAnswers() != null) {
-                        model.addAttribute("submission", true);
+                // Check if this user is the owner of the course
+                boolean isOwner = loggedInUser.getRole() == UserRole.TEACHER && course.getTeacherId().equals(loggedInUser.getId());
+                boolean isStudent = loggedInUser.getRole() == UserRole.STUDENT || !isOwner;
+
+                model.addAttribute("isOwner", isOwner);
+                model.addAttribute("isStudent", isStudent);
+
+                // Get submission info for students only
+                if (loggedInUser.getRole() == UserRole.STUDENT) {
+                        try {
+                                QuizSubmission submissionResponse = restTemplate.getForObject(
+                                                quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + loggedInUser.getId(),
+                                                QuizSubmission.class);
+                                model.addAttribute("submission", submissionResponse.getStudentAnswers() != null);
+                        } catch (Exception e) {
+                                model.addAttribute("submission", false);
+                        }
                 } else {
                         model.addAttribute("submission", false);
-
                 }
-                model.addAttribute("loggedInUser", user);
-                model.addAttribute("isStudent", user != null && user.getRole() == UserRole.STUDENT);
 
-                // show grade
-                if (user != null && user.getRole() == UserRole.STUDENT) {
+                // Grade (students only)
+                if (loggedInUser.getRole() == UserRole.STUDENT) {
                         try {
-                                String gradeUrl = gradingServiceUrl + "/grades/student/" + user.getId() + "/quiz/" + id;
+                                String gradeUrl = gradingServiceUrl + "/grades/student/" + loggedInUser.getId()
+                                                + "/quiz/" + id;
                                 ResponseEntity<Grade> gradeResponse = restTemplate.getForEntity(gradeUrl, Grade.class);
                                 Grade grade = gradeResponse.getBody();
                                 if (grade != null) {

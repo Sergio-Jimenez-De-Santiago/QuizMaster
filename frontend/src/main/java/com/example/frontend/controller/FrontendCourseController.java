@@ -100,33 +100,45 @@ public class FrontendCourseController {
             return "redirect:/login";
         }
         model.addAttribute("loggedInUser", loggedInUser);
-        model.addAttribute("isStudent", loggedInUser != null && loggedInUser.getRole() == UserRole.STUDENT);
 
         // Get course through course service
+        Course course = null;
         try {
             ResponseEntity<Course> response = restTemplate.getForEntity(
                     courseServiceUrl + "/courses/" + id, Course.class);
-            model.addAttribute("course", response.getBody());
+            course = response.getBody();
+            model.addAttribute("course", course);
         } catch (Exception e) {
             model.addAttribute("error", "Could not load the course.");
+            return "course-details";
         }
+
+        // Determine user roles and access
+        boolean isOwner = loggedInUser.getRole() == UserRole.TEACHER && course.getTeacherId().equals(loggedInUser.getId());
+        boolean isStudent = loggedInUser.getRole() == UserRole.STUDENT;
+        boolean isStudentView = isStudent || (!isOwner && loggedInUser.getRole() == UserRole.TEACHER);
+
+        model.addAttribute("isOwner", isOwner);
+        model.addAttribute("isStudent", isStudent);
+        model.addAttribute("isStudentView", isStudentView);
 
         // Check if student is already enrolled
         boolean alreadyEnrolled = false;
-        if (loggedInUser.getRole() == UserRole.STUDENT) {
+        if (isStudent) {
             try {
                 ResponseEntity<Enrolment[]> response = restTemplate.getForEntity(
                         enrolmentServiceUrl + "/enrolments/student/" + loggedInUser.getId(), Enrolment[].class);
                 List<Enrolment> enrolments = Arrays.asList(response.getBody());
 
-                alreadyEnrolled = enrolments.stream().anyMatch(e -> e.getCourseId().equals(Long.valueOf(id)));
+                alreadyEnrolled = enrolments.stream()
+                        .anyMatch(e -> e.getCourseId().equals(id));
             } catch (Exception e) {
                 model.addAttribute("error", "Could not find enrollments.");
             }
         }
         model.addAttribute("alreadyEnrolled", alreadyEnrolled);
 
-        // Get the quizzes that are part of a course through quiz service
+        // Get quizzes that are part of the course
         try {
             ResponseEntity<QuizCollectionModel> response = restTemplate.getForEntity(
                     quizServiceUrl + "/quizzes/byCourse/" + id, QuizCollectionModel.class);
