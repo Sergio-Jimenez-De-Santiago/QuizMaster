@@ -40,6 +40,10 @@ public class Enrolment {
         this.courseId = courseId;
     }
 
+    public Long getId(){
+        return enrolmentId;
+    }
+
     @Override
     public String toString() {
         return "Enrolment{" +

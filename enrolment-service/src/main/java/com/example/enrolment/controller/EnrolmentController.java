@@ -52,4 +52,18 @@ public class EnrolmentController {
     public ResponseEntity<Enrolment> getEnrolmentById(@PathVariable Long id) {
         return ResponseEntity.ok(enrolmentService.getEnrolmentById(id));
     }
+    
+    @GetMapping("courses/{courseId}/enrolments")
+    public ResponseEntity<List<Enrolment>> getEnrolmentByCourseId(@PathVariable Long courseId) {
+        return ResponseEntity.ok(enrolmentService.getEnrolmentsByCourseId(courseId));
+    }
+
+    @DeleteMapping("/enrolments/{id}")
+    public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
+        if (enrolmentService.getEnrolmentById(id) == null) {
+            return ResponseEntity.notFound().build();
+        }
+        enrolmentService.deleteEnrolment(id);
+        return ResponseEntity.noContent().build();
+    }
 }

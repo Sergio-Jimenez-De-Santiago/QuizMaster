@@ -52,4 +52,8 @@ public class EnrolmentService {
                 .map(List::of)
                 .orElse(List.of());
     }
+
+    public void deleteEnrolment(long Id) {
+        enrolmentRepository.deleteById(Id);
+    }
 }

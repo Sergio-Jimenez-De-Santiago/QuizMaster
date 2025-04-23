@@ -88,14 +88,18 @@
                 <div th:if="${isOwner}" class="mt-3">
                     <a th:href="@{/courses/{courseId}/create-quiz(courseId=${course.id})}" class="btn btn-success">Create New Quiz</a>
                 </div>
-                <form th:action="@{'/courses/' + ${course.id}}" method="post" style="display:inline;" th:if="${isOwner}">
+                <form id="delete-course-form" th:action="@{'/courses/' + ${course.id}}" method="post" style="display:inline;" th:if="${isOwner}">
                     <input type="hidden" name="_method" value="delete"/>
-                    <button type="submit" class="btn btn-danger">Delete Course</button>
-                  </form>
+                    <button type="submit" class="btn btn-danger" id="delete-course-btn">Delete Course</button>
+                </form>     
             </div>
 
         </div>
     </div>
 </main>
+
+
+
+
 </body>
 </html>

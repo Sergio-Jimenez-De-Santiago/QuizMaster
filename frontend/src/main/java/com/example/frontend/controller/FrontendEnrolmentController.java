@@ -1,13 +1,21 @@
 package com.example.frontend.controller;
 
+import com.example.frontend.model.Course;
 import com.example.frontend.model.Enrolment;
 import com.example.frontend.model.User;
 
 import jakarta.servlet.http.HttpSession;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Controller
@@ -38,4 +46,47 @@ public class FrontendEnrolmentController {
             return "redirect:/courses/" + courseId + "?error=" + e.getMessage();
         }
     }
+
+    @DeleteMapping("/enrolments/{courseId}")
+    public String deleteEnrolment(@PathVariable Integer courseId, Model model, HttpSession session) {
+        try {
+            // Fetch enrolments for the given courseId
+            ResponseEntity<List<Enrolment>> response = restTemplate.exchange(
+                    enrolementServiceUrl + "/courses/" + courseId + "/enrolments",
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Enrolment>>() {
+                    });
+
+
+            List<Enrolment> enrolments = response.getBody();
+            System.out.println(response.getBody());
+
+            if (enrolments == null || enrolments.isEmpty()) {
+                model.addAttribute("error", "No enrolments found for this course.");
+                return "redirect:/courses";
+            }
+
+            // Loop through the enrolments and delete each one
+            for (Enrolment enrolment : enrolments) {
+                try {
+                    restTemplate.delete(enrolementServiceUrl + "/enrolments/" + enrolment.getEnrolmentId());
+                } catch (HttpClientErrorException.NotFound e) {
+                    model.addAttribute("error", "Enrolment with ID " + enrolment.getEnrolmentId() + " already deleted.");
+                } catch (Exception e) {
+                    model.addAttribute("error",
+                            "Failed to delete enrolment with ID " + enrolment.getEnrolmentId() + ". " + e.getMessage());
+                    return "redirect:/courses";
+                }
+            }
+
+            return "redirect:/courses"; // Redirect after deletion
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Something went wrong while trying to delete the enrolment.");
+            return "redirect:/courses";
+        }
+    }
+
 }
