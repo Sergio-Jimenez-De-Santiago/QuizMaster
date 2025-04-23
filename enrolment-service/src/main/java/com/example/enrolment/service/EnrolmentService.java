@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import com.example.enrolment.model.Enrolment;
 import java.util.Optional;
+
 @Service
 public class EnrolmentService {
 
@@ -45,5 +46,10 @@ public class EnrolmentService {
     public List<Enrolment> getEnrolmentsByCourseId(Long courseId) {
         return enrolmentRepository.findByCourseId(courseId);
     }
-}
 
+    public List<Enrolment> getEnrolmentsByStudentIdAndCourseId(Long studentId, Long courseId) {
+        return enrolmentRepository.findByStudentIdAndCourseId(studentId, courseId)
+                .map(List::of)
+                .orElse(List.of());
+    }
+}

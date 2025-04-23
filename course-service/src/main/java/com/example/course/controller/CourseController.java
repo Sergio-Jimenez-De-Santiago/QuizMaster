@@ -1,7 +1,6 @@
 package com.example.course.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,7 +8,10 @@ import com.example.course.dto.CourseWithQuizzesDTO;
 import com.example.course.model.Course;
 import com.example.course.service.CourseService;
 
-import java.util.*;
+import java.net.URI;
+import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
 public class CourseController {
@@ -23,7 +25,9 @@ public class CourseController {
 
     @PostMapping("/courses")
     public ResponseEntity<Course> createCourse(@RequestBody Course course) {
-        return new ResponseEntity<>(courseService.createCourse(course), HttpStatus.CREATED);
+        Course created = courseService.createCourse(course);
+        URI location = linkTo(methodOn(CourseController.class).getCourseById(created.getId())).toUri();
+        return ResponseEntity.created(location).body(created);
     }
 
     @GetMapping("/courses/{id}")
@@ -32,18 +36,13 @@ public class CourseController {
     }
 
     @GetMapping("/courses")
-    public List<Course> getAllCourses() {
-        return courseService.getAllCourses();
+    public List<Course> getCourses(@RequestParam(required = false) Long teacherId) {
+        return teacherId != null ? courseService.getCoursesByTeacherId(teacherId) : courseService.getAllCourses();
     }
 
-    @GetMapping("/courses/teacher/{teacherId}")
-    public List<Course> getCoursesByTeacherId(@PathVariable Long teacherId) {
-        return courseService.getCoursesByTeacherId(teacherId);
-    }
-
+    // Returns a course enriched with a list of its related quizzes (view projection)
     @GetMapping("/courses/{id}/with-quizzes")
     public ResponseEntity<CourseWithQuizzesDTO> getCourseWithQuizzes(@PathVariable Long id) {
         return ResponseEntity.ok(courseService.getCourseWithQuizzes(id));
     }
-
 }

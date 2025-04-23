@@ -48,7 +48,7 @@ public class FrontendCourseController {
         try {
             if (loggedInUser.getRole() == UserRole.STUDENT) {
                 ResponseEntity<Enrolment[]> enrolmentResponse = restTemplate.getForEntity(
-                        enrolmentServiceUrl + "/enrolments/student/" + loggedInUser.getId(), Enrolment[].class);
+                        enrolmentServiceUrl + "/enrolments?studentId=" + loggedInUser.getId(), Enrolment[].class);
                 List<Enrolment> enrolments = Arrays.asList(enrolmentResponse.getBody());
 
                 List<Course> courses = new ArrayList<>();
@@ -61,7 +61,7 @@ public class FrontendCourseController {
                 model.addAttribute("courses", courses);
             } else {
                 ResponseEntity<Course[]> response = restTemplate.getForEntity(
-                        courseServiceUrl + "/courses/teacher/" + loggedInUser.getId(), Course[].class);
+                        courseServiceUrl + "/courses?teacherId=" + loggedInUser.getId(), Course[].class);
                 model.addAttribute("courses", Arrays.asList(response.getBody()));
             }
         } catch (Exception e) {
@@ -128,11 +128,9 @@ public class FrontendCourseController {
         if (isStudent) {
             try {
                 ResponseEntity<Enrolment[]> response = restTemplate.getForEntity(
-                        enrolmentServiceUrl + "/enrolments/student/" + loggedInUser.getId(), Enrolment[].class);
-                List<Enrolment> enrolments = Arrays.asList(response.getBody());
-
-                alreadyEnrolled = enrolments.stream()
-                        .anyMatch(e -> e.getCourseId().equals(id));
+                        enrolmentServiceUrl + "/enrolments?studentId=" + loggedInUser.getId() + "&courseId=" + id,
+                        Enrolment[].class);
+                alreadyEnrolled = response.getBody() != null && response.getBody().length > 0;
             } catch (Exception e) {
                 model.addAttribute("error", "Could not find enrollments.");
             }
