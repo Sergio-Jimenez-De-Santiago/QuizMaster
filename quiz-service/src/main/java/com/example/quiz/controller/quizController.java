@@ -44,6 +44,7 @@ public class QuizController {
         dto.setCourseId(quiz.getCourseId());
         dto.setQuestions(quiz.getQuestions());
         dto.setTeacherAnswers(quiz.getTeacherAnswers());
+        dto.setOptions(quiz.getOptions());
         return dto;
     }
 
@@ -68,6 +69,7 @@ public class QuizController {
         Quiz quiz = quizService.findById(id);
         if (quiz == null)
             return ResponseEntity.notFound().build();
+        System.out.println("QUIZ FOUND " + quiz);
         return ResponseEntity.ok(assembler.toModel(toDTO(quiz)));
     }
 
@@ -79,8 +81,9 @@ public class QuizController {
         quiz.setTimeLeft(quizDTO.getTimeLeft());
         quiz.setTeacherAnswers(quizDTO.getTeacherAnswers());
         quiz.setCourseId(courseId);
+        quiz.setOptions(quizDTO.getOptions());
         quizService.createQuiz(quiz);
-
+        System.out.println("QUIZ SAVED"+ quiz);
         QuizDTO savedDTO = toDTO(quiz);
         EntityModel<QuizDTO> model = assembler.toModel(savedDTO);
         return ResponseEntity

@@ -1,5 +1,6 @@
 package com.example.quiz.dto;
 
+import java.util.List;
 import java.util.Map;
 
 public class QuizDTO {
@@ -10,6 +11,8 @@ public class QuizDTO {
     private Map<Integer, String> questions;
     private Map<Integer, String> teacherAnswers;
     private Map<Integer, String> studentAnswers;
+    private Map<Integer, List<String>> options;
+
     private long courseId;
 
     // No-args constructor
@@ -21,6 +24,7 @@ public class QuizDTO {
             Map<Integer, String> questions,
             Map<Integer, String> teacherAnswers,
             Map<Integer, String> studentAnswers,
+            Map<Integer, List<String>> options,
             long courseId) {
         this.id = id;
         this.title = title;
@@ -29,6 +33,8 @@ public class QuizDTO {
         this.teacherAnswers = teacherAnswers;
         this.studentAnswers = studentAnswers;
         this.courseId = courseId;
+        this.options = options;
+
     }
 
     // Getters and Setters
@@ -88,16 +94,24 @@ public class QuizDTO {
         this.courseId = courseId;
     }
 
-    @Override
-    public String toString() {
+    public Map<Integer, List<String>> getOptions() {
+        return options;
+    }
+
+    public void setOptions(Map<Integer, List<String>> options) {
+        this.options = options;
+    }
+
+    @Override public String toString() {
         return "QuizDTO{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", timeLeft='" + timeLeft + '\'' +
-                ", questions=" + questions +
-                ", teacherAnswers=" + teacherAnswers +
-                ", studentAnswers=" + studentAnswers +
-                ", courseId=" + courseId +
-                '}';
+               "id=" + id +
+               ", title='" + title + '\'' +
+               ", timeLeft='" + timeLeft + '\'' +
+               ", questions=" + questions +
+               ", teacherAnswers=" + teacherAnswers +
+               ", studentAnswers=" + studentAnswers +
+               ", options=" + options +
+               ", courseId=" + courseId +
+               '}';
     }
 }

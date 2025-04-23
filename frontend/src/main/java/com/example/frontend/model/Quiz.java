@@ -1,8 +1,9 @@
 package com.example.frontend.model;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Quiz {
@@ -16,6 +17,8 @@ public class Quiz {
     @JsonIgnore
     private transient String teacherAnswersText;
     private long courseId;
+
+    private Map<Integer, List<String>> options = new HashMap<>();
 
     public String getQuestionsText() {
         return questionsText;
@@ -81,7 +84,13 @@ public class Quiz {
         this.teacherAnswers = teacherAnswers;
     }
 
+    public Map<Integer, List<String>> getOptions(){
+        return options;
+    }
 
+    public void setOptions(Map<Integer, List<String>> options){
+        this.options = options;
+    }
 
     @Override
     public String toString() {
@@ -92,6 +101,7 @@ public class Quiz {
                 ", questions=" + questions +
                 ", teacherAnswers=" + teacherAnswers +
                 ", courseId=" + courseId +
+                ", options= " + options + 
                 '}';
     }
 

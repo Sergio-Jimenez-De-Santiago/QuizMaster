@@ -1,5 +1,6 @@
 package com.example.frontend.dto;
 
+import java.util.List;
 import java.util.Map;
 
 public class QuizDTO {
@@ -9,6 +10,7 @@ public class QuizDTO {
     private Map<Integer, String> questions;
     private Map<Integer, String> teacherAnswers;
     private Map<Integer, String> studentAnswers;
+    private Map<Integer, List<String>> options;
 
     public long getId() {
         return id;
@@ -55,5 +57,14 @@ public class QuizDTO {
 
     public void setStudentAnswers(Map<Integer, String> studentAnswers) {
         this.studentAnswers = studentAnswers;
+    }
+
+    
+    public Map<Integer, List<String>> getOptions(){
+        return options;
+    }
+
+    public void setOptions(Map<Integer, List<String>> options){
+        this.options = options;
     }
 }

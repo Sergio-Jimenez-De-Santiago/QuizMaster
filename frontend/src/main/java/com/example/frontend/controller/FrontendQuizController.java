@@ -154,9 +154,11 @@ public class FrontendQuizController {
 
                         if (submissionResponse.getStudentAnswers() != null) {
                                 model.addAttribute("submission", submissionResponse);
+                                model.addAttribute("quiz", response.getBody());
                                 return "submission-result";
                         }
 
+                        System.out.println(response.getBody());
                         model.addAttribute("timeLeft", response.getBody().getTimeLeft());
                         model.addAttribute("quizSession", new HashMap<Integer, String>());
                         return "quiz-attempt";
@@ -208,7 +210,14 @@ public class FrontendQuizController {
 
                 Quiz quiz = new Quiz();
                 quiz.setCourseId(courseId);
+                quiz.setQuestions(new HashMap<>());
+                quiz.setOptions(new HashMap<>());
+                quiz.setTeacherAnswers(new HashMap<>());
 
+                int first = 1;
+                quiz.getQuestions().put(first, "");
+                quiz.getOptions().put(first, List.of("a", "b", "c"));
+                quiz.getTeacherAnswers().put(first, "");
                 model.addAttribute("quiz", quiz);
                 model.addAttribute("loggedInUser", loggedInUser);
                 return "create-quiz";
@@ -226,74 +235,80 @@ public class FrontendQuizController {
 
         // Handle submission of the create quiz form
         @PostMapping("/courses/{courseId}/create-quiz")
-        public String createQuiz(@ModelAttribute Quiz quiz, Model model, HttpSession session) {
-                // Get loggedInUser through the HttpSession
+        public String createQuiz(@ModelAttribute Quiz quiz,
+                        Model model,
+                        HttpSession session) {
                 User loggedInUser = (User) session.getAttribute("loggedInUser");
                 if (loggedInUser == null || loggedInUser.getRole() != UserRole.TEACHER) {
                         return "redirect:/login";
                 }
 
+                if (quiz.getTitle() == null || quiz.getTitle().trim().isEmpty() ||
+                                quiz.getTimeLeft() == null || quiz.getTimeLeft().trim().isEmpty() ||
+                                quiz.getQuestions() == null || quiz.getQuestions().isEmpty() ||
+                                quiz.getOptions() == null || quiz.getOptions().isEmpty() ||
+                                quiz.getTeacherAnswers()== null|| quiz.getTeacherAnswers().isEmpty()
+                                ) {
+                        model.addAttribute("error",
+                                        "Please fill in a title, time,at least one question with options and a correct answer selected");
+                        return "create-quiz";
+                }
+
+                int time;
                 try {
-                        // Validate non-empty fields
-                        if (quiz.getTitle() == null || quiz.getTitle().trim().isEmpty() ||
-                                        quiz.getTimeLeft() == null || quiz.getTimeLeft().trim().isEmpty() ||
-                                        quiz.getQuestionsText() == null || quiz.getQuestionsText().trim().isEmpty() ||
-                                        quiz.getTeacherAnswersText() == null
-                                        || quiz.getTeacherAnswersText().trim().isEmpty()) {
+                        time = Integer.parseInt(quiz.getTimeLeft().trim());
+                        if (time <= 0 || time > 600) {
+                                model.addAttribute("error", "Time must be between 1 and 600 minutes.");
+                                return "create-quiz";
+                        }
+                } catch (NumberFormatException ex) {
+                        model.addAttribute("error", "Time must be a valid integer.");
+                        return "create-quiz";
+                }
 
-                                model.addAttribute("error", "All fields must be filled in");
+                Map<Integer, String> questions = quiz.getQuestions();
+                Map<Integer, List<String>> options = quiz.getOptions();
+                Map<Integer, String> teacherAnswers = quiz.getTeacherAnswers();
+
+                for (Integer qNo : questions.keySet()) {
+                        String qText = questions.get(qNo);
+                        if (qText == null || qText.trim().isEmpty()) {
+                                model.addAttribute("error", "Question " + qNo + " must not be empty.");
                                 return "create-quiz";
                         }
 
-                        // Validate timeLeft
-                        int time;
-                        try {
-                                time = Integer.parseInt(quiz.getTimeLeft().trim());
-                                if (time <= 0 || time > 600) {
-                                        model.addAttribute("error",
-                                                        "Time must be an integer between 1 and 600 (both included)");
-                                        return "create-quiz";
-                                }
-                        } catch (NumberFormatException e) {
-                                model.addAttribute("error", "Time must be a valid integer");
-                                return "create-quiz";
-                        }
-
-                        String[] questionsArray = quiz.getQuestionsText().split("\\r?\\n");
-                        String[] answersArray = quiz.getTeacherAnswersText().split("\\r?\\n");
-
-                        List<String> filteredQuestions = Arrays.stream(questionsArray).map(String::trim)
-                                        .filter(s -> !s.isEmpty()).toList();
-                        List<String> filteredAnswers = Arrays.stream(answersArray).map(String::trim)
-                                        .filter(s -> !s.isEmpty()).toList();
-
-                        // Number of questions and answers has to match
-                        if (filteredQuestions.size() != filteredAnswers.size()) {
+                        List<String> opts = options.get(qNo);
+                        if (opts == null || opts.size() != 3 ||
+                                        opts.stream().anyMatch(o -> o == null || o.trim().isEmpty())) {
                                 model.addAttribute("error",
-                                                "The number of non-empty questions and answers must be equal");
+                                                "Question " + qNo + " must have exactly 3 non-empty options.");
                                 return "create-quiz";
                         }
 
-                        Map<Integer, String> questions = new HashMap<>();
-                        Map<Integer, String> answers = new HashMap<>();
-                        for (int i = 0; i < filteredQuestions.size(); i++) {
-                                questions.put(i + 1, filteredQuestions.get(i));
+                        String correct = teacherAnswers.get(qNo);
+                        if (correct == null || !opts.contains(correct)) {
+                                model.addAttribute("error",
+                                                "For question " + qNo
+                                                                + ", you must select one of the three options as correct.");
+                                return "create-quiz";
                         }
-                        for (int i = 0; i < filteredAnswers.size(); i++) {
-                                answers.put(i + 1, filteredAnswers.get(i));
-                        }
-                        quiz.setQuestions(questions);
-                        quiz.setTeacherAnswers(answers);
+                }
+
+                try {
+                        QuizDTO dto = convertToDTO(quiz);
+                        dto.setOptions(options);
 
                         HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
-                        QuizDTO quizDTO = convertToDTO(quiz);
-                        HttpEntity<QuizDTO> request = new HttpEntity<>(quizDTO, headers);
+                        HttpEntity<QuizDTO> request = new HttpEntity<>(dto, headers);
 
-                        restTemplate.postForEntity(quizServiceUrl + "/courses/" + quiz.getCourseId() + "/quizzes",
-                                        request, Quiz.class);
+                        restTemplate.postForEntity(
+                                        quizServiceUrl + "/courses/" + quiz.getCourseId() + "/quizzes",
+                                        request,
+                                        Quiz.class);
 
                         return "redirect:/courses/" + quiz.getCourseId();
+
                 } catch (HttpClientErrorException e) {
                         model.addAttribute("error", "Error creating quiz: " + e.getMessage());
                         return "create-quiz";

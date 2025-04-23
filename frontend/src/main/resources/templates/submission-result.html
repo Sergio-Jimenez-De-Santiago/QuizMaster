@@ -54,7 +54,7 @@
                     </p>
 
                     <div class="mt-2" 
-                        th:if="${loggedInUser != null and !isStudent}">
+                        th:if="${loggedInUser != null}">
                         <strong>Teacher's Answer:</strong>
                         <span th:text="${quiz.teacherAnswers.get(entry.key)}">Correct Answer</span>
                     </div>
