@@ -14,15 +14,10 @@ import jakarta.servlet.http.HttpSession;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.EntityModel;
 import java.util.Map;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -93,7 +88,8 @@ public class FrontendQuizController {
                 }
 
                 // Check if this user is the owner of the course
-                boolean isOwner = loggedInUser.getRole() == UserRole.TEACHER && course.getTeacherId().equals(loggedInUser.getId());
+                boolean isOwner = loggedInUser.getRole() == UserRole.TEACHER
+                                && course.getTeacherId().equals(loggedInUser.getId());
                 boolean isStudent = loggedInUser.getRole() == UserRole.STUDENT || !isOwner;
 
                 model.addAttribute("isOwner", isOwner);
@@ -103,8 +99,10 @@ public class FrontendQuizController {
                 if (loggedInUser.getRole() == UserRole.STUDENT) {
                         try {
                                 QuizSubmission submissionResponse = restTemplate.getForObject(
-                                                quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + loggedInUser.getId(),
+                                                quizServiceUrl + "/quizzes/" + id + "/submissions/"
+                                                                + loggedInUser.getId(),
                                                 QuizSubmission.class);
+
                                 model.addAttribute("submission", submissionResponse.getStudentAnswers() != null);
                         } catch (Exception e) {
                                 model.addAttribute("submission", false);
@@ -116,11 +114,14 @@ public class FrontendQuizController {
                 // Grade (students only)
                 if (loggedInUser.getRole() == UserRole.STUDENT) {
                         try {
-                                String gradeUrl = gradingServiceUrl + "/grades/student/" + loggedInUser.getId()
-                                                + "/quiz/" + id;
-                                ResponseEntity<Grade> gradeResponse = restTemplate.getForEntity(gradeUrl, Grade.class);
-                                Grade grade = gradeResponse.getBody();
-                                if (grade != null) {
+                                String gradeUrl = gradingServiceUrl + "/grades?studentId=" + loggedInUser.getId()
+                                                + "&quizId=" + id;
+                                ResponseEntity<Grade[]> gradeResponse = restTemplate.getForEntity(gradeUrl,
+                                                Grade[].class);
+                                Grade[] grades = gradeResponse.getBody();
+
+                                if (grades != null && grades.length > 0) {
+                                        Grade grade = grades[0];
                                         model.addAttribute("grade", grade.getScore());
                                         System.out.println("Found grade: " + grade.getScore());
                                 }
@@ -148,7 +149,7 @@ public class FrontendQuizController {
                         model.addAttribute("quiz", response.getBody());
 
                         QuizSubmission submissionResponse = restTemplate.getForObject(
-                                        quizServiceUrl + "/quizzes/" + id + "/start?studentId=" + user.getId(),
+                                        quizServiceUrl + "/quizzes/" + id + "/submissions/" + user.getId(),
                                         QuizSubmission.class);
 
                         if (submissionResponse.getStudentAnswers() != null) {
@@ -329,8 +330,8 @@ public class FrontendQuizController {
                 }
 
                 try {
-                        // 1. Submit quiz
-                        String submitUrl = quizServiceUrl + "/quizzes/" + id + "/submit";
+                        // Submit quiz
+                        String submitUrl = quizServiceUrl + "/quizzes/" + id + "/submissions";
                         QuizSubmissionDTO submissionDTO = new QuizSubmissionDTO();
                         submissionDTO.setQuizId(id);
                         submissionDTO.setStudentAnswers(studentAnswers);
@@ -343,7 +344,7 @@ public class FrontendQuizController {
                         QuizSubmissionDTO submission = response.getBody();
                         System.out.println("Quiz submitted. Response: " + submission);
 
-                        // 2. Fetch quiz
+                        // Fetch quiz
                         String quizUrl = quizServiceUrl + "/quizzes/" + id;
                         ResponseEntity<Quiz> quizResponse = restTemplate.getForEntity(quizUrl, Quiz.class);
                         Quiz quiz = quizResponse.getBody();
@@ -367,9 +368,9 @@ public class FrontendQuizController {
                         gradeRequest.setStudentAnswers(studentAnswers);
                         gradeRequest.setCorrectAnswers(correctAnswers);
 
-                        // 3. Call grading service
+                        // Call grading service
                         try {
-                                String gradingUrl = gradingServiceUrl + "/grades/evaluate";
+                                String gradingUrl = gradingServiceUrl + "/grades";
                                 System.out.println("Calling grading service at: " + gradingUrl);
                                 ResponseEntity<Grade> gradeResponse = restTemplate.postForEntity(gradingUrl,
                                                 gradeRequest, Grade.class);

@@ -14,9 +14,8 @@ public class QuizModelAssembler implements RepresentationModelAssembler<QuizDTO,
     @Override
     public EntityModel<QuizDTO> toModel(QuizDTO quiz) {
         return EntityModel.of(quiz,
-            linkTo(methodOn(QuizController.class).getQuiz((int) quiz.getId())).withSelfRel(),
-            linkTo(methodOn(QuizController.class).getQuizzes()).withRel("quizzes"),
-            linkTo(methodOn(QuizController.class).getQuizzesByCourse(quiz.getCourseId())).withRel("byCourse")
-        );
+                linkTo(methodOn(QuizController.class).getQuiz((int) quiz.getId())).withSelfRel(),
+                linkTo(methodOn(QuizController.class).getQuizzes(null)).withRel("quizzes"),
+                linkTo(methodOn(QuizController.class).getQuizzes(quiz.getCourseId())).withRel("byCourse"));
     }
 }

@@ -44,7 +44,7 @@ public class CourseService {
     public CourseWithQuizzesDTO getCourseWithQuizzes(Long courseId) {
         Course course = getCourseById(courseId);
 
-        String quizServiceUrl = "http://quiz-service/quizzes/byCourse/" + courseId;
+        String quizServiceUrl = "http://quiz-service/quizzes?courseId=" + courseId;
         QuizDTO[] quizArray = restTemplate.getForObject(quizServiceUrl, QuizDTO[].class);
 
         CourseWithQuizzesDTO dto = new CourseWithQuizzesDTO();

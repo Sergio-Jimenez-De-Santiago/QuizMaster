@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class GradingController {
@@ -22,16 +21,31 @@ public class GradingController {
         this.gradingService = gradingService;
     }
 
-    @PostMapping("/grades/evaluate")
+    @PostMapping("/grades")
     public ResponseEntity<Grade> evaluateAndStoreGrade(@RequestBody GradeRequestDTO requestDTO) {
         Grade grade = gradingService.calculateAndSaveGrade(requestDTO);
         return new ResponseEntity<>(grade, HttpStatus.CREATED);
     }
 
     @GetMapping("/grades")
-    public ResponseEntity<List<Grade>> getAllGrades() {
-        List<Grade> grades = gradingService.getAllGrades();
-        return new ResponseEntity<>(grades, HttpStatus.OK);
+    public ResponseEntity<List<Grade>> getGrades(
+            @RequestParam(required = false) Long studentId,
+            @RequestParam(required = false) Long quizId) {
+
+        if (studentId != null && quizId != null) {
+            return gradingService.getGradesByStudentIdAndQuizId(studentId, quizId)
+                    .map(grade -> ResponseEntity.ok(List.of(grade)))
+                    .orElse(ResponseEntity.notFound().build());
+        }
+
+        if (studentId != null) {
+            List<Grade> grades = gradingService.getGradesByStudentId(studentId);
+            return ResponseEntity.ok(grades);
+        }
+
+        // default: return all grades
+        List<Grade> all = gradingService.getAllGrades();
+        return ResponseEntity.ok(all);
     }
 
     @GetMapping("/grades/{id}")
@@ -42,17 +56,5 @@ public class GradingController {
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-    }
-
-    @GetMapping("/grades/student/{studentId}")
-    public ResponseEntity<List<Grade>> getGradesByStudentId(@PathVariable Long studentId) {
-        List<Grade> grades = gradingService.getGradesByStudentId(studentId);
-        return new ResponseEntity<>(grades, HttpStatus.OK);
-    }
-    
-    @GetMapping("/grades/student/{studentId}/quiz/{quizId}")
-    public ResponseEntity<Grade> getGradeByStudentIdAndQuizId(@PathVariable Long studentId, @PathVariable Long quizId) {
-        Optional<Grade> gradeOpt = gradingService.getGradesByStudentIdAndQuizId(studentId, quizId);
-        return gradeOpt.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }

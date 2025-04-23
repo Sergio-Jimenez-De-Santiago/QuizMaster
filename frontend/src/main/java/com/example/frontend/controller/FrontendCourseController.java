@@ -114,7 +114,8 @@ public class FrontendCourseController {
         }
 
         // Determine user roles and access
-        boolean isOwner = loggedInUser.getRole() == UserRole.TEACHER && course.getTeacherId().equals(loggedInUser.getId());
+        boolean isOwner = loggedInUser.getRole() == UserRole.TEACHER
+                && course.getTeacherId().equals(loggedInUser.getId());
         boolean isStudent = loggedInUser.getRole() == UserRole.STUDENT;
         boolean isStudentView = isStudent || (!isOwner && loggedInUser.getRole() == UserRole.TEACHER);
 
@@ -141,7 +142,7 @@ public class FrontendCourseController {
         // Get quizzes that are part of the course
         try {
             ResponseEntity<QuizCollectionModel> response = restTemplate.getForEntity(
-                    quizServiceUrl + "/quizzes/byCourse/" + id, QuizCollectionModel.class);
+                    quizServiceUrl + "/quizzes?courseId=" + id, QuizCollectionModel.class);
 
             List<EntityModel<QuizDTO>> quizModels = response.getBody().getQuizzes();
 

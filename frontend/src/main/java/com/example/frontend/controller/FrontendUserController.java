@@ -34,7 +34,7 @@ public class FrontendUserController {
         System.out.println("FrontendUserController adduser");
         try {
             ResponseEntity<User> response = restTemplate.postForEntity(
-                    userServiceUrl + "/api/users/register", user, User.class);
+                    userServiceUrl + "/users", user, User.class);
             session.setAttribute("loggedInUser", response.getBody());
             return "redirect:/index";
         } catch (HttpClientErrorException e) {
@@ -58,7 +58,7 @@ public class FrontendUserController {
     public String login(@ModelAttribute User user, Model model, HttpSession session) {
         try {
             ResponseEntity<User> response = restTemplate.postForEntity(
-                    userServiceUrl + "/api/users/login", user, User.class);
+                    userServiceUrl + "/authenticate", user, User.class);
             session.setAttribute("loggedInUser", response.getBody());
             return "redirect:/index";
         } catch (HttpClientErrorException.Unauthorized e) {
@@ -88,7 +88,7 @@ public class FrontendUserController {
             ParameterizedTypeReference<EntityModel<UserProfileDTO>> responseType = new ParameterizedTypeReference<EntityModel<UserProfileDTO>>() {};
 
             ResponseEntity<EntityModel<UserProfileDTO>> response = restTemplate.exchange(
-                userServiceUrl + "/api/users/" + loggedInUser.getId() + "/profile",
+                userServiceUrl + "/users/" + loggedInUser.getId() + "/profile",
                 HttpMethod.GET,
                 null,
                 responseType

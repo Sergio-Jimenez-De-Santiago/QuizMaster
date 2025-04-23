@@ -29,7 +29,7 @@ public class UserRestController {
         this.userService = userService;
     }
 
-    @PostMapping("/api/users/register")
+    @PostMapping("/users")
     public ResponseEntity<?> register(@RequestBody @Valid User user) {
         System.out.println("============== Received Registration Request ==============");
         System.out.println("User object: " + user);
@@ -47,7 +47,7 @@ public class UserRestController {
         }
     }
 
-    @PostMapping("/api/users/login")
+    @PostMapping("/authenticate")
     public ResponseEntity<?> login(@RequestBody User user) {
         User existing = userService.findByEmail(user.getEmail());
 
@@ -61,7 +61,8 @@ public class UserRestController {
         return ResponseEntity.ok(resource);
     }
 
-    @GetMapping("/api/users/{id}")
+    // Returns User object (password included)
+    @GetMapping("/users/{id}")
     public ResponseEntity<EntityModel<UserProfileDTO>> getUser(@PathVariable Long id) {
         try {
             User user = userService.findById(id);
@@ -71,7 +72,8 @@ public class UserRestController {
         }
     }
 
-    @GetMapping("/api/users/{id}/profile")
+    // Returns client safe user view (no password)
+    @GetMapping("/users/{id}/profile")
     public ResponseEntity<EntityModel<UserProfileDTO>> getUserProfile(@PathVariable Long id) {
         return userService.getUserProfile(id);
     }

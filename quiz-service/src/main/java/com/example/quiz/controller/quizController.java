@@ -47,23 +47,27 @@ public class QuizController {
         return dto;
     }
 
-    @GetMapping(value = "/quizzes", produces = "application/hal+json")
-    public ResponseEntity<CollectionModel<EntityModel<QuizDTO>>> getQuizzes() {
-        List<EntityModel<QuizDTO>> quizzes = quizService.getAllQuizzes().stream()
+    @GetMapping("/quizzes")
+    public ResponseEntity<CollectionModel<EntityModel<QuizDTO>>> getQuizzes(
+            @RequestParam(value = "courseId", required = false) Long courseId) {
+
+        List<Quiz> quizzes = (courseId != null) ? quizService.findByCourseId(courseId) : quizService.getAllQuizzes();
+
+        List<EntityModel<QuizDTO>> quizModels = quizzes.stream()
                 .map(this::toDTO)
                 .map(assembler::toModel)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(CollectionModel.of(
-                quizzes,
-                linkTo(methodOn(QuizController.class).getQuizzes()).withSelfRel()
-        ));
+        return ResponseEntity.ok(
+                CollectionModel.of(quizModels,
+                        linkTo(methodOn(QuizController.class).getQuizzes(courseId)).withSelfRel()));
     }
 
     @GetMapping(value = "/quizzes/{id}", produces = "application/hal+json")
     public ResponseEntity<EntityModel<QuizDTO>> getQuiz(@PathVariable Integer id) {
         Quiz quiz = quizService.findById(id);
-        if (quiz == null) return ResponseEntity.notFound().build();
+        if (quiz == null)
+            return ResponseEntity.notFound().build();
         return ResponseEntity.ok(assembler.toModel(toDTO(quiz)));
     }
 
@@ -93,40 +97,41 @@ public class QuizController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/quizzes/byCourse/{courseId}")
-    public ResponseEntity<CollectionModel<EntityModel<QuizDTO>>> getQuizzesByCourse(@PathVariable Long courseId) {
-        List<EntityModel<QuizDTO>> quizzes = quizService.findByCourseId(courseId).stream()
-                .map(this::toDTO)
-                .map(assembler::toModel)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(CollectionModel.of(
-                quizzes,
-                linkTo(methodOn(QuizController.class).getQuizzesByCourse(courseId)).withSelfRel()
-        ));
-    }
-
-    @GetMapping("/quizzes/{id}/start")
-    public ResponseEntity<?> startQuiz(@PathVariable Integer id, @RequestParam Long studentId) {
-        Optional<QuizSubmission> existing = quizService.findSubmission(studentId, id);
+    @GetMapping("/quizzes/{quizId}/submissions/{studentId}")
+    public ResponseEntity<?> getOrStartSubmission(@PathVariable Integer quizId, @PathVariable Long studentId) {
+        Optional<QuizSubmission> existing = quizService.findSubmission(studentId, quizId);
         if (existing.isPresent()) {
-            return ResponseEntity.ok(existing);
+            return ResponseEntity.ok(new QuizSubmissionDTO(
+                    existing.get().getId(),
+                    existing.get().getStudentId(),
+                    existing.get().getQuizId(),
+                    existing.get().getStudentAnswers()));
         }
-        Quiz quiz = quizService.findById(id);
-        if (quiz == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quiz not found");
+
+        Quiz quiz = quizService.findById(quizId);
+        if (quiz == null)
+            return ResponseEntity.notFound().build();
+
         return ResponseEntity.ok(toDTO(quiz));
     }
 
-    @PostMapping("/quizzes/{id}/submit")
-    public ResponseEntity<QuizSubmissionDTO> submitQuiz(@PathVariable Long id, @RequestBody QuizSubmissionDTO quizSubmissionDTO) {
+    @PostMapping("/quizzes/{quizId}/submissions")
+    public ResponseEntity<QuizSubmissionDTO> submitQuiz(
+            @PathVariable Long quizId,
+            @RequestBody QuizSubmissionDTO quizSubmissionDTO) {
+
+        if (!quizId.equals(quizSubmissionDTO.getQuizId().longValue())) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
         QuizSubmission saved = quizService.submit(quizSubmissionDTO.toEntity());
         QuizSubmissionDTO result = new QuizSubmissionDTO(
-            saved.getId(),
-            saved.getStudentId(),
-            saved.getQuizId(),
-            saved.getStudentAnswers()
-        );
+                saved.getId(),
+                saved.getStudentId(),
+                saved.getQuizId(),
+                saved.getStudentAnswers());
 
-        return ResponseEntity.ok(result);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
+
 }
