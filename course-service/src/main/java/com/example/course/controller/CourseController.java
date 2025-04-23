@@ -45,4 +45,12 @@ public class CourseController {
     public ResponseEntity<CourseWithQuizzesDTO> getCourseWithQuizzes(@PathVariable Long id) {
         return ResponseEntity.ok(courseService.getCourseWithQuizzes(id));
     }
+    @DeleteMapping("/courses/{id}")
+    public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
+        if (courseService.getCourseById(id) == null) {
+            return ResponseEntity.notFound().build();
+        }
+        courseService.deleteCourse(id);
+        return ResponseEntity.noContent().build();
+    }
 }

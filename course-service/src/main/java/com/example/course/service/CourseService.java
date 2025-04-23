@@ -40,7 +40,9 @@ public class CourseService {
     public List<Course> getCoursesByTeacherId(Long teacherId) {
         return courseRepository.findByTeacherId(teacherId);
     }
-
+    public void deleteCourse(long Id) {
+        courseRepository.deleteById(Id);
+    }
     public CourseWithQuizzesDTO getCourseWithQuizzes(Long courseId) {
         Course course = getCourseById(courseId);
 

@@ -13,6 +13,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.frontend.model.User;
@@ -21,6 +22,7 @@ import com.example.frontend.security.UserRole;
 import com.example.frontend.dto.QuizDTO;
 import com.example.frontend.model.Course;
 import com.example.frontend.model.Enrolment;
+import com.example.frontend.model.Quiz;
 
 @Controller
 public class FrontendCourseController {
@@ -185,6 +187,33 @@ public class FrontendCourseController {
         } catch (Exception e) {
             model.addAttribute("error", "Failed to create course.");
             return "create-course";
+        }
+    }
+
+    @DeleteMapping("/courses/{id}")
+    public String deleteCourse(@PathVariable Integer id, Model model, HttpSession session) {
+        try {
+
+            ResponseEntity<Course> response = restTemplate.getForEntity(
+                    courseServiceUrl + "/courses/" + id, Course.class);
+            Course course = response.getBody();
+            if (course == null) {
+                model.addAttribute("error", "Course not found.");
+                return "redirect:/courses";
+            }
+
+            try {
+                restTemplate.delete(courseServiceUrl + "/courses/" + id);
+            } catch (HttpClientErrorException.NotFound e) {
+                model.addAttribute("error", "Quiz already deleted.");
+            }
+
+            return "redirect:/courses" ;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Something went wrong trying to delete the course.");
+            return "redirect:/courses";
         }
     }
 
