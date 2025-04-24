@@ -211,31 +211,4 @@ public class FrontendCourseController {
         }
     }
 
-    @DeleteMapping("/courses/{id}")
-    public String deleteCourse(@PathVariable Integer id, Model model, HttpSession session) {
-        try {
-
-            ResponseEntity<Course> response = restTemplate.getForEntity(
-                    courseServiceUrl + "/courses/" + id, Course.class);
-            Course course = response.getBody();
-            if (course == null) {
-                model.addAttribute("error", "Course not found.");
-                return "redirect:/courses";
-            }
-
-            try {
-                restTemplate.delete(courseServiceUrl + "/courses/" + id);
-            } catch (HttpClientErrorException.NotFound e) {
-                model.addAttribute("error", "Quiz already deleted.");
-            }
-
-            return "redirect:/courses";
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            model.addAttribute("error", "Something went wrong trying to delete the course.");
-            return "redirect:/courses";
-        }
-    }
-
 }

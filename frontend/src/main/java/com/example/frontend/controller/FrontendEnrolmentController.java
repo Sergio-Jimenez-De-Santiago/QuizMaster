@@ -48,46 +48,4 @@ public class FrontendEnrolmentController {
         }
     }
 
-    @DeleteMapping("/enrolments/{courseId}")
-    public String deleteEnrolment(@PathVariable Integer courseId, Model model, HttpSession session) {
-        try {
-            // Fetch enrolments for the given courseId
-            ResponseEntity<List<Enrolment>> response = restTemplate.exchange(
-                    enrolementServiceUrl + "/courses/" + courseId + "/enrolments",
-                    HttpMethod.GET,
-                    null,
-                    new ParameterizedTypeReference<List<Enrolment>>() {
-                    });
-
-
-            List<Enrolment> enrolments = response.getBody();
-            System.out.println(response.getBody());
-
-            if (enrolments == null || enrolments.isEmpty()) {
-                model.addAttribute("error", "No enrolments found for this course.");
-                return "redirect:/courses";
-            }
-
-            // Loop through the enrolments and delete each one
-            for (Enrolment enrolment : enrolments) {
-                try {
-                    restTemplate.delete(enrolementServiceUrl + "/enrolments/" + enrolment.getEnrolmentId());
-                } catch (HttpClientErrorException.NotFound e) {
-                    model.addAttribute("error", "Enrolment with ID " + enrolment.getEnrolmentId() + " already deleted.");
-                } catch (Exception e) {
-                    model.addAttribute("error",
-                            "Failed to delete enrolment with ID " + enrolment.getEnrolmentId() + ". " + e.getMessage());
-                    return "redirect:/courses";
-                }
-            }
-
-            return "redirect:/courses"; // Redirect after deletion
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            model.addAttribute("error", "Something went wrong while trying to delete the enrolment.");
-            return "redirect:/courses";
-        }
-    }
-
 }
