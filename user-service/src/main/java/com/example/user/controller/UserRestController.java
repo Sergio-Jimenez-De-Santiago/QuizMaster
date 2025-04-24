@@ -1,7 +1,7 @@
 package com.example.user.controller;
 
-import com.example.user.assembler.UserDTOModelAssembler;
 import com.example.user.model.User;
+import com.example.user.security.UserRole;
 import com.example.user.dto.UserProfileDTO;
 import com.example.user.service.UserService;
 
@@ -15,6 +15,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,28 +26,20 @@ public class UserRestController {
     private final UserService userService;
 
     @Autowired
-    private UserDTOModelAssembler assembler;
-
-    @Autowired
     public UserRestController(UserService userService) {
         this.userService = userService;
     }
 
     @PostMapping(value = "/users", produces = "application/hal+json")
     public ResponseEntity<?> register(@RequestBody @Valid User user) {
-        System.out.println("============== Received Registration Request ==============");
-        System.out.println("User object: " + user);
-        System.out.println("Email: " + user.getEmail());
-        System.out.println("Name:  " + user.getName());
-        System.out.println("===========================================================");
         try {
             User created = userService.createUser(user);
-            EntityModel<UserProfileDTO> resource = assembler.toModel(new UserProfileDTO(created));
+            EntityModel<UserProfileDTO> resource = toModel(new UserProfileDTO(created), ViewContext.REGISTER);
             return ResponseEntity
                     .created(linkTo(methodOn(UserRestController.class).getUserProfile(created.getId())).toUri())
                     .body(resource);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Email already exists 2");
+            return ResponseEntity.badRequest().body("Email already exists");
         }
     }
 
@@ -60,38 +53,61 @@ public class UserRestController {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
 
-        EntityModel<UserProfileDTO> resource = assembler.toModel(new UserProfileDTO(existing));
+        EntityModel<UserProfileDTO> resource = toModel(new UserProfileDTO(existing), ViewContext.LOGIN);
         return ResponseEntity.ok(resource);
     }
 
-    @GetMapping(value = "/users", produces = "application/hal+json")
-    public ResponseEntity<CollectionModel<EntityModel<UserProfileDTO>>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
-
-        List<EntityModel<UserProfileDTO>> userModels = users.stream()
-                .map(UserProfileDTO::new)
-                .map(assembler::toModel)
-                .toList();
-
-        return ResponseEntity.ok(
-                CollectionModel.of(userModels,
-                        linkTo(methodOn(UserRestController.class).getAllUsers()).withSelfRel()));
-    }
-
-    // Returns User object (password included)
     @GetMapping(value = "/users/{id}", produces = "application/hal+json")
     public ResponseEntity<EntityModel<UserProfileDTO>> getUser(@PathVariable Long id) {
         try {
             User user = userService.findById(id);
-            return ResponseEntity.ok(assembler.toModel(new UserProfileDTO(user)));
+            return ResponseEntity.ok(toModel(new UserProfileDTO(user), ViewContext.API_VIEW));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    // Returns client safe user view (no password)
     @GetMapping(value = "/users/{id}/profile", produces = "application/hal+json")
     public ResponseEntity<EntityModel<UserProfileDTO>> getUserProfile(@PathVariable Long id) {
-        return userService.getUserProfile(id);
+        try {
+            User user = userService.findById(id);
+            return ResponseEntity.ok(toModel(new UserProfileDTO(user), ViewContext.PROFILE_VIEW));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    private EntityModel<UserProfileDTO> toModel(UserProfileDTO user, ViewContext context) {
+        EntityModel<UserProfileDTO> model;
+
+        switch (context) {
+            case PROFILE_VIEW -> {
+                model = EntityModel.of(user,
+                        linkTo(methodOn(UserRestController.class).getUserProfile(user.getId())).withSelfRel());
+            }
+            case LOGIN, REGISTER -> {
+                model = EntityModel.of(user,
+                        linkTo(methodOn(UserRestController.class).getUser(user.getId())).withSelfRel(),
+                        linkTo(methodOn(UserRestController.class).getUserProfile(user.getId())).withRel("profile"));
+            }
+            case API_VIEW -> {
+                model = EntityModel.of(user,
+                        linkTo(methodOn(UserRestController.class).getUser(user.getId())).withSelfRel(),
+                        linkTo(methodOn(UserRestController.class).getUserProfile(user.getId())).withRel("profile"));
+            }
+            default -> {
+                model = EntityModel.of(user,
+                        linkTo(methodOn(UserRestController.class).getUser(user.getId())).withSelfRel());
+            }
+        }
+
+        return model;
+    }
+
+    private enum ViewContext {
+        LOGIN,
+        REGISTER,
+        PROFILE_VIEW,
+        API_VIEW
     }
 }
