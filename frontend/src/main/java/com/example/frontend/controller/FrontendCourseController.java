@@ -14,12 +14,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.frontend.model.User;
 import com.example.frontend.response.QuizCollectionModel;
 import com.example.frontend.security.UserRole;
 import com.example.frontend.dto.QuizDTO;
+import com.example.frontend.dto.UserProfileDTO;
 import com.example.frontend.model.Course;
 import com.example.frontend.model.Enrolment;
 import com.example.frontend.model.Quiz;
@@ -40,7 +42,7 @@ public class FrontendCourseController {
 
     @GetMapping({ "/", "/index" })
     public String showIndex(Model model, HttpSession session) {
-        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        UserProfileDTO loggedInUser = (UserProfileDTO) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
             return "redirect:/login";
         }
@@ -53,11 +55,29 @@ public class FrontendCourseController {
                         enrolmentServiceUrl + "/enrolments?studentId=" + loggedInUser.getId(), Enrolment[].class);
                 List<Enrolment> enrolments = Arrays.asList(enrolmentResponse.getBody());
 
+                System.out.println("Fetching enrolments for user: " + loggedInUser.getId());
+                System.out.println("Enrolments: " + enrolments);
+
                 List<Course> courses = new ArrayList<>();
                 for (Enrolment enrolment : enrolments) {
-                    ResponseEntity<Course> courseResponse = restTemplate.getForEntity(
-                            courseServiceUrl + "/courses/" + enrolment.getCourseId(), Course.class);
-                    courses.add(courseResponse.getBody());
+                    Long courseId = enrolment.getCourseId();
+                    System.out.println("Fetching course for courseId: " + courseId);
+                    try {
+                        ResponseEntity<Course> courseResponse = restTemplate.getForEntity(
+                                courseServiceUrl + "/courses/" + courseId, Course.class);
+                        Course course = courseResponse.getBody();
+                        if (course != null) {
+                            courses.add(course);
+                        } else {
+                            System.out.println("Warning: Received null for course ID " + courseId);
+                        }
+                    } catch (HttpClientErrorException | HttpServerErrorException e) {
+                        System.out.println("Skipping course ID " + courseId + " due to error: " + e.getStatusCode()
+                                + " - " + e.getMessage());
+                    } catch (Exception e) {
+                        System.out.println("Unexpected error fetching course ID " + courseId);
+                        e.printStackTrace();
+                    }
                 }
 
                 model.addAttribute("courses", courses);
@@ -69,6 +89,7 @@ public class FrontendCourseController {
         } catch (Exception e) {
             model.addAttribute("error", "Could not load courses.");
             model.addAttribute("courses", List.of());
+            e.printStackTrace();
         }
 
         return "index";
@@ -97,7 +118,7 @@ public class FrontendCourseController {
     @GetMapping("/courses/{id}")
     public String getCourseDetails(@PathVariable Long id, Model model, HttpSession session) {
         // Get loggedInUser through the HttpSession
-        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        UserProfileDTO loggedInUser = (UserProfileDTO) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
             return "redirect:/login";
         }
@@ -160,28 +181,28 @@ public class FrontendCourseController {
 
     @GetMapping("/create-course")
     public String showCreateCourseForm(Model model, HttpSession session) {
-        User user = (User) session.getAttribute("loggedInUser");
+        UserProfileDTO loggedInUser = (UserProfileDTO) session.getAttribute("loggedInUser");
 
-        if (user == null || user.getRole() != UserRole.TEACHER) {
+        if (loggedInUser == null || loggedInUser.getRole() != UserRole.TEACHER) {
             return "redirect:/index";
         }
 
         model.addAttribute("course", new Course());
-        model.addAttribute("loggedInUser", user);
+        model.addAttribute("loggedInUser", loggedInUser);
 
         return "create-course";
     }
 
     @PostMapping("/courses/create")
     public String createCourse(@ModelAttribute Course course, Model model, HttpSession session) {
-        User user = (User) session.getAttribute("loggedInUser");
+        UserProfileDTO loggedInUser = (UserProfileDTO) session.getAttribute("loggedInUser");
 
-        if (user == null || user.getRole() != UserRole.TEACHER) {
+        if (loggedInUser == null || loggedInUser.getRole() != UserRole.TEACHER) {
             return "redirect:/login";
         }
 
         try {
-            course.setTeacherId(user.getId());
+            course.setTeacherId(loggedInUser.getId());
             restTemplate.postForEntity(courseServiceUrl + "/courses", course, Course.class);
             return "redirect:/index";
         } catch (Exception e) {
@@ -208,7 +229,7 @@ public class FrontendCourseController {
                 model.addAttribute("error", "Quiz already deleted.");
             }
 
-            return "redirect:/courses" ;
+            return "redirect:/courses";
 
         } catch (Exception e) {
             e.printStackTrace();

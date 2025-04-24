@@ -1,5 +1,6 @@
 package com.example.frontend.controller;
 
+import com.example.frontend.dto.UserProfileDTO;
 import com.example.frontend.model.Course;
 import com.example.frontend.model.Enrolment;
 import com.example.frontend.model.User;
@@ -29,7 +30,7 @@ public class FrontendEnrolmentController {
     @PostMapping("/enroll/{courseId}")
     public String enrollInCourse(@PathVariable Long courseId, HttpSession session) {
         try {
-            User student = (User) session.getAttribute("loggedInUser");
+            UserProfileDTO student = (UserProfileDTO) session.getAttribute("loggedInUser");
             if (student == null) {
                 return "redirect:/login";
             }

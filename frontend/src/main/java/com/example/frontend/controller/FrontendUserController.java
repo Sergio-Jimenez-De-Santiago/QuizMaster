@@ -33,9 +33,13 @@ public class FrontendUserController {
     public String register(@ModelAttribute User user, Model model, HttpSession session) {
         System.out.println("FrontendUserController adduser");
         try {
-            ResponseEntity<User> response = restTemplate.postForEntity(
-                    userServiceUrl + "/users", user, User.class);
-            session.setAttribute("loggedInUser", response.getBody());
+            ParameterizedTypeReference<EntityModel<UserProfileDTO>> responseType = new ParameterizedTypeReference<>() {};
+            ResponseEntity<EntityModel<UserProfileDTO>> response = restTemplate.exchange(
+                    userServiceUrl + "/users",
+                    HttpMethod.POST,
+                    new HttpEntity<>(user),
+                    responseType);
+            session.setAttribute("loggedInUser", response.getBody().getContent());
             return "redirect:/index";
         } catch (HttpClientErrorException e) {
             model.addAttribute("error", "Email already exists 1");
@@ -57,9 +61,13 @@ public class FrontendUserController {
     @PostMapping("/login")
     public String login(@ModelAttribute User user, Model model, HttpSession session) {
         try {
-            ResponseEntity<User> response = restTemplate.postForEntity(
-                    userServiceUrl + "/authenticate", user, User.class);
-            session.setAttribute("loggedInUser", response.getBody());
+            ParameterizedTypeReference<EntityModel<UserProfileDTO>> responseType = new ParameterizedTypeReference<>() {};
+            ResponseEntity<EntityModel<UserProfileDTO>> response = restTemplate.exchange(
+                    userServiceUrl + "/authenticate",
+                    HttpMethod.POST,
+                    new HttpEntity<>(user),
+                    responseType);
+            session.setAttribute("loggedInUser", response.getBody().getContent());
             return "redirect:/index";
         } catch (HttpClientErrorException.Unauthorized e) {
             model.addAttribute("error", true);
@@ -78,7 +86,7 @@ public class FrontendUserController {
 
     @GetMapping("/profile")
     public String profile(Model model, HttpSession session) {
-        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        UserProfileDTO loggedInUser = (UserProfileDTO) session.getAttribute("loggedInUser");
         if (loggedInUser == null) {
             return "redirect:/login";
         }
@@ -86,13 +94,11 @@ public class FrontendUserController {
 
         try {
             ParameterizedTypeReference<EntityModel<UserProfileDTO>> responseType = new ParameterizedTypeReference<EntityModel<UserProfileDTO>>() {};
-
             ResponseEntity<EntityModel<UserProfileDTO>> response = restTemplate.exchange(
-                userServiceUrl + "/users/" + loggedInUser.getId() + "/profile",
-                HttpMethod.GET,
-                null,
-                responseType
-            );
+                    userServiceUrl + "/users/" + loggedInUser.getId() + "/profile",
+                    HttpMethod.GET,
+                    null,
+                    responseType);
 
             UserProfileDTO profile = response.getBody().getContent();
             model.addAttribute("user", profile);

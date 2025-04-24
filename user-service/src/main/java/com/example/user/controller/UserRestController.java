@@ -10,7 +10,10 @@ import jakarta.validation.Valid;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +32,7 @@ public class UserRestController {
         this.userService = userService;
     }
 
-    @PostMapping("/users")
+    @PostMapping(value = "/users", produces = "application/hal+json")
     public ResponseEntity<?> register(@RequestBody @Valid User user) {
         System.out.println("============== Received Registration Request ==============");
         System.out.println("User object: " + user);
@@ -47,7 +50,7 @@ public class UserRestController {
         }
     }
 
-    @PostMapping("/authenticate")
+    @PostMapping(value = "/authenticate", produces = "application/hal+json")
     public ResponseEntity<?> login(@RequestBody User user) {
         User existing = userService.findByEmail(user.getEmail());
 
@@ -61,8 +64,22 @@ public class UserRestController {
         return ResponseEntity.ok(resource);
     }
 
+    @GetMapping(value = "/users", produces = "application/hal+json")
+    public ResponseEntity<CollectionModel<EntityModel<UserProfileDTO>>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+
+        List<EntityModel<UserProfileDTO>> userModels = users.stream()
+                .map(UserProfileDTO::new)
+                .map(assembler::toModel)
+                .toList();
+
+        return ResponseEntity.ok(
+                CollectionModel.of(userModels,
+                        linkTo(methodOn(UserRestController.class).getAllUsers()).withSelfRel()));
+    }
+
     // Returns User object (password included)
-    @GetMapping("/users/{id}")
+    @GetMapping(value = "/users/{id}", produces = "application/hal+json")
     public ResponseEntity<EntityModel<UserProfileDTO>> getUser(@PathVariable Long id) {
         try {
             User user = userService.findById(id);
@@ -73,7 +90,7 @@ public class UserRestController {
     }
 
     // Returns client safe user view (no password)
-    @GetMapping("/users/{id}/profile")
+    @GetMapping(value = "/users/{id}/profile", produces = "application/hal+json")
     public ResponseEntity<EntityModel<UserProfileDTO>> getUserProfile(@PathVariable Long id) {
         return userService.getUserProfile(id);
     }

@@ -3,6 +3,7 @@ package com.example.frontend.controller;
 import com.example.frontend.dto.GradeRequestDTO;
 import com.example.frontend.dto.QuizDTO;
 import com.example.frontend.dto.QuizSubmissionDTO;
+import com.example.frontend.dto.UserProfileDTO;
 import com.example.frontend.model.Course;
 import com.example.frontend.model.Grade;
 import com.example.frontend.model.Quiz;
@@ -43,10 +44,9 @@ public class FrontendQuizController {
                         ResponseEntity<Quiz[]> response = restTemplate.getForEntity(
                                         quizServiceUrl + "/quizzes", Quiz[].class);
                         model.addAttribute("quizzes", response.getBody());
-                        Object userObj = session.getAttribute("loggedInUser");
-                        User user = (User) userObj;
-                        model.addAttribute("loggedInUser", user);
-                        model.addAttribute("isStudent", user != null && user.getRole() == UserRole.STUDENT);
+                        UserProfileDTO loggedInUser = (UserProfileDTO) session.getAttribute("loggedInUser");
+                        model.addAttribute("loggedInUser", loggedInUser);
+                        model.addAttribute("isStudent", loggedInUser != null && loggedInUser.getRole() == UserRole.STUDENT);
                         System.out.println("got quiz" + response.getBody());
                 } catch (Exception e) {
                         model.addAttribute("error", "Could not load quizzes.");
@@ -57,7 +57,7 @@ public class FrontendQuizController {
         @GetMapping("/quizzes/{id}")
         public String getQuiz(@PathVariable Integer id, Model model, HttpSession session) {
                 // Get loggedInUser through the HttpSession
-                User loggedInUser = (User) session.getAttribute("loggedInUser");
+                UserProfileDTO loggedInUser = (UserProfileDTO) session.getAttribute("loggedInUser");
                 if (loggedInUser == null) {
                         return "redirect:/login";
                 }
@@ -135,13 +135,13 @@ public class FrontendQuizController {
 
         @GetMapping("/quizzes/{id}/start")
         public String startQuiz(@PathVariable Integer id, Model model, HttpSession session) {
-                User user = (User) session.getAttribute("loggedInUser");
-                if (user == null) {
+                UserProfileDTO loggedInUser = (UserProfileDTO) session.getAttribute("loggedInUser");
+                if (loggedInUser == null) {
                         return "redirect:/login";
                 }
 
-                model.addAttribute("loggedInUser", user);
-                model.addAttribute("isStudent", user.getRole() == UserRole.STUDENT);
+                model.addAttribute("loggedInUser", loggedInUser);
+                model.addAttribute("isStudent", loggedInUser.getRole() == UserRole.STUDENT);
 
                 try {
                         ResponseEntity<Quiz> response = restTemplate.getForEntity(
@@ -149,7 +149,7 @@ public class FrontendQuizController {
                         model.addAttribute("quiz", response.getBody());
 
                         QuizSubmission submissionResponse = restTemplate.getForObject(
-                                        quizServiceUrl + "/quizzes/" + id + "/submissions/" + user.getId(),
+                                        quizServiceUrl + "/quizzes/" + id + "/submissions/" + loggedInUser.getId(),
                                         QuizSubmission.class);
 
                         if (submissionResponse.getStudentAnswers() != null) {
@@ -203,7 +203,7 @@ public class FrontendQuizController {
         @GetMapping("/courses/{courseId}/create-quiz")
         public String createQuizForm(@PathVariable("courseId") Long courseId, Model model, HttpSession session) {
                 // Get loggedInUser through the HttpSession
-                User loggedInUser = (User) session.getAttribute("loggedInUser");
+                UserProfileDTO loggedInUser = (UserProfileDTO) session.getAttribute("loggedInUser");
                 if (loggedInUser == null || loggedInUser.getRole() != UserRole.TEACHER) {
                         return "redirect:/login";
                 }
@@ -238,7 +238,7 @@ public class FrontendQuizController {
         public String createQuiz(@ModelAttribute Quiz quiz,
                         Model model,
                         HttpSession session) {
-                User loggedInUser = (User) session.getAttribute("loggedInUser");
+                UserProfileDTO loggedInUser = (UserProfileDTO) session.getAttribute("loggedInUser");
                 if (loggedInUser == null || loggedInUser.getRole() != UserRole.TEACHER) {
                         return "redirect:/login";
                 }
@@ -321,14 +321,14 @@ public class FrontendQuizController {
                         HttpSession session,
                         Model model) {
 
-                User user = (User) session.getAttribute("loggedInUser");
-                if (user == null) {
-                        System.err.println("⚠️ No logged-in user. Redirecting to login.");
+                UserProfileDTO loggedInUser = (UserProfileDTO) session.getAttribute("loggedInUser");
+                if (loggedInUser == null) {
+                        System.err.println("No logged-in user. Redirecting to login.");
                         return "redirect:/login";
                 }
 
-                model.addAttribute("loggedInUser", user);
-                model.addAttribute("isStudent", user.getRole() == UserRole.STUDENT);
+                model.addAttribute("loggedInUser", loggedInUser);
+                model.addAttribute("isStudent", loggedInUser.getRole() == UserRole.STUDENT);
 
                 Map<Integer, String> studentAnswers = new HashMap<>();
                 for (Map.Entry<String, String> entry : allParams.entrySet()) {
@@ -350,7 +350,7 @@ public class FrontendQuizController {
                         QuizSubmissionDTO submissionDTO = new QuizSubmissionDTO();
                         submissionDTO.setQuizId(id);
                         submissionDTO.setStudentAnswers(studentAnswers);
-                        submissionDTO.setStudentId(user.getId());
+                        submissionDTO.setStudentId(loggedInUser.getId());
 
                         System.out.println("Sending quiz submission to " + submitUrl);
                         ResponseEntity<QuizSubmissionDTO> response = restTemplate.postForEntity(
@@ -378,7 +378,7 @@ public class FrontendQuizController {
 
                         System.out.println("Preparing grading request...");
                         GradeRequestDTO gradeRequest = new GradeRequestDTO();
-                        gradeRequest.setStudentId(user.getId());
+                        gradeRequest.setStudentId(loggedInUser.getId());
                         gradeRequest.setQuizId(id.longValue());
                         gradeRequest.setStudentAnswers(studentAnswers);
                         gradeRequest.setCorrectAnswers(correctAnswers);
