@@ -92,6 +92,10 @@
                     <input type="hidden" name="_method" value="delete"/>
                     <button type="submit" class="btn btn-danger" id="delete-course-btn">Delete Course</button>
                 </form>     
+                <form th:action="@{/enrolments/{id}(id=${course.id})}" method="post" style="display:inline;" th:if="${isStudent}">
+                    <input type="hidden" name="_method" value="delete"/>
+                    <button type="submit" class="btn btn-danger" id="delete-course-btn">Unenrol</button>
+                </form>     
             </div>
 
         </div>

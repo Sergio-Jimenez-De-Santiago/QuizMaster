@@ -48,4 +48,39 @@ public class FrontendEnrolmentController {
         }
     }
 
+    @DeleteMapping("/enrolments/{courseId}")
+    public String deleteEnrolment(@PathVariable Integer courseId, Model model, HttpSession session) {
+        try {
+            // Fetch enrolments for the given courseId
+            ResponseEntity<List<Enrolment>> response = restTemplate.exchange(
+                    enrolementServiceUrl + "/courses/" + courseId + "/enrolments",
+                    HttpMethod.GET,
+                    null,
+                    new ParameterizedTypeReference<List<Enrolment>>() {
+                    });
+
+            List<Enrolment> enrolments = response.getBody();
+            System.out.println(response.getBody());
+            UserProfileDTO student = (UserProfileDTO) session.getAttribute("loggedInUser");
+
+            if (enrolments == null || enrolments.isEmpty()) {
+                model.addAttribute("error", "No enrolments found for this course.");
+                return "redirect:/courses";
+            }
+
+            for (Enrolment enrolment : enrolments) {
+                if(enrolment.getStudentId() == student.getId()){
+                    restTemplate.delete(enrolementServiceUrl + "/enrolments/" + enrolment.getEnrolmentId());
+                }
+            }
+
+            return "redirect:/courses"; 
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Something went wrong while trying to delete the enrolment.");
+            return "redirect:/courses";
+        }
+    }
+
 }
